@@ -2651,6 +2651,7 @@
         var tg = e.target ? e.target.tagName : "";
         if(tg === "BUTTON" || tg === "TEXTAREA") return;
         e.preventDefault();
+        if(enterAdvance(e.target, document.getElementById("formModal") || overlay)) return;
         document.getElementById("formModalSave").click();
       }
     }
@@ -8280,24 +8281,44 @@
     saveData(); input.value = ""; renderTableList();
   });
 
-  // Pressing Enter in any Add-form text/number field in Setup triggers that
-  // card's own Add button, instead of forcing a click every time. Scoped to
-  // #screen-setup and delegated off the closest .card, so it automatically
-  // covers every current (and future) Add form -- Zones, Tables, Categories,
-  // Items, Vendors, Customers, Staff -- without hard-coding each one.
-  document.getElementById("screen-setup").addEventListener("keydown", function(e){
-    if(e.key !== "Enter") return;
+  // ENTER = next field; Enter on the LAST field = press the form's main
+  // button (Add / Save / Record). Works in every Setup card, purchase /
+  // expense / wastage / payment forms and modals. Billing screen, login and
+  // the inline food-menu editor keep their own Enter behaviour.
+  function enterAdvance(target, container){
+    if(!target || !container) return false;
+    var sel = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]):not([readonly]),select';
+    var fields = Array.prototype.slice.call(container.querySelectorAll(sel)).filter(function(f){
+      return !f.disabled && f.offsetParent !== null && f.getAttribute("tabindex") !== "-1";
+    });
+    var i = fields.indexOf(target);
+    if(i < 0) return false;
+    if(i < fields.length - 1){
+      var nx = fields[i + 1];
+      nx.focus();
+      if(nx.select && nx.tagName === "INPUT") try{ nx.select(); }catch(_){}
+      return true;
+    }
+    return false;
+  }
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" || e.defaultPrevented || e.isComposing) return;
     var target = e.target;
     if(!target) return;
     var tag = target.tagName;
     if(tag !== "INPUT" && tag !== "SELECT") return;
-    if(tag === "INPUT" && (target.type === "checkbox" || target.type === "radio")) return;
-    var card = target.closest(".card");
-    if(!card) return;
-    var addBtn = card.querySelector('button[id^="btnAdd"]');
-    if(!addBtn) return;
+    if(tag === "INPUT" && /^(checkbox|radio|button|submit|file|search)$/.test(target.type)) return;
+    if(target.hasAttribute("data-fe") || target.getAttribute("list") && false) return;
+    if(target.closest("#screen-billing, #loginOverlay, #recoveryEnterOverlay, #recoveryCodeOverlay, #formModalOverlay")) return;
+    var box = target.closest(".modal-box") || target.closest(".card");
+    if(!box) return;
     e.preventDefault();
-    addBtn.click();
+    if(enterAdvance(target, box)) return;
+    var btn = box.querySelector('button[id^="btnAdd"]:not([disabled])') ||
+              box.querySelector('.modal-actions button.gold:not([disabled])') ||
+              box.querySelector('button.btn.gold:not(.small):not([disabled])') ||
+              box.querySelector('button.btn.gold:not([disabled])');
+    if(btn) btn.click();
   });
 
   function renderCategoryList(){
