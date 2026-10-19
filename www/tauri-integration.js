@@ -10,7 +10,7 @@
   var IS_TAURI = !!(window.__TAURI__ && window.__TAURI__.core);
   window.IS_TAURI = IS_TAURI;
 
-  var APP_VERSION = '0.1.1';
+  var APP_VERSION = '0.1.3';
   var PRODUCT_ID = 'bar-pos';
   var LICENSE_API_BASE = 'https://licensing-platform.pages.dev';
   var LICENSE_STORAGE_KEY = 'barBillLicense_v1';
@@ -309,13 +309,15 @@
 
   /* ---------- automatic updates ---------- */
   function checkForUpdate(){
-    if(!(window.__TAURI__.updater && window.__TAURI__.process)) return;
+    if(!(window.__TAURI__.updater && window.__TAURI__.process)){ plog('Update check skipped: updater plugin missing'); return; }
+    plog('Update check: installed ' + APP_VERSION);
     window.__TAURI__.updater.check().then(function(update){
-      if(!update) return;
-      var yes = confirm('A new version (' + update.version + ') is available.\n\nUpdate now? The app will download it and restart.\n\nChoose Cancel to keep working; you will be asked again next time.');
+      if(!update){ plog('Update check: up to date'); return; }
+      plog('Update available: ' + update.version);
+      var yes = confirm('A new version (' + update.version + ') is available. Install now? The app will restart.');
       if(!yes){ msg('Update postponed.'); return; }
       msg('Downloading update ' + update.version + '...');
-      return update.downloadAndInstall().then(function(){ msg('Update installed. Restarting...'); return window.__TAURI__.process.relaunch(); });
-    }).catch(function(e){ console.error('Update check failed', e); });
+      return update.downloadAndInstall().then(function(){ plog('Update installed'); msg('Update installed. Restarting...'); return window.__TAURI__.process.relaunch(); });
+    }).catch(function(e){ plog('Update check FAILED: ' + e); console.error('Update check failed', e); });
   }
 })();
