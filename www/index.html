@@ -8398,7 +8398,11 @@
           var cat = data.categories.find(function(c){ return c.id === btn.getAttribute("data-toggleexcise"); });
           if(!cat) return;
           cat.isExciseCategory = !cat.isExciseCategory;
-          saveData(); renderCategoryList();
+          // Items store their own excise flag; keep every item in this category in step.
+          var nEx = 0;
+          data.items.forEach(function(i){ if(i.categoryId === cat.id){ i.exciseTracked = cat.isExciseCategory; nEx++; } });
+          showToast(cat.name + ": Excise " + (cat.isExciseCategory ? "Yes" : "No") + " (" + nEx + " items updated)");
+          saveData(); renderCategoryList(); renderItemList();
         });
       });
       box.querySelectorAll("[data-toggletrack]").forEach(function(btn){
@@ -8406,7 +8410,11 @@
           var cat = data.categories.find(function(c){ return c.id === btn.getAttribute("data-toggletrack"); });
           if(!cat) return;
           cat.trackStock = !(cat.trackStock !== false);
-          saveData(); renderCategoryList();
+          // Apply to existing items too, so Stock screen matches the menu.
+          var nTr = 0;
+          data.items.forEach(function(i){ if(i.categoryId === cat.id){ i.trackStock = cat.trackStock; nTr++; } });
+          showToast(cat.name + ": Track Stock " + (cat.trackStock ? "Yes" : "No") + " (" + nTr + " items updated)");
+          saveData(); renderCategoryList(); renderItemList();
         });
       });
     });
@@ -8867,6 +8875,8 @@
       fields: [
         {key: "name", label: "Item Name", type: "text", value: item.name || ""},
         {key: "itemCode", label: "Item Code (for quick search)", type: "text", value: item.itemCode || ""},
+        {key: "trackStock", label: "Track Stock (shows in Stock screen, alerts, purchases)", type: "select", value: item.trackStock ? "yes" : "no",
+          options: [{value: "yes", label: "Yes -- track stock"}, {value: "no", label: "No -- do not track"}]},
         {key: "exciseTracked", label: "Excise Item (include in excise reports)", type: "select", value: isItemExciseTracked(item) ? "yes" : "no",
           options: [{value: "no", label: "No -- not liquor (snacks, drinks, water, etc.)"}, {value: "yes", label: "Yes -- liquor, tracked in excise reports"}]},
         {key: "brand", label: "Brand Name (e.g. Royal Stag, Kingfisher)", type: "text", value: item.brand || ""},
@@ -8899,6 +8909,7 @@
         item.name = newName;
         item.itemCode = values.itemCode || item.itemCode;
         item.exciseTracked = values.exciseTracked === "yes";
+        item.trackStock = values.trackStock === "yes";
         item.brand = values.brand || "";
         item.liquorType = values.liquorType || "";
         item.exciseLabelNo = values.exciseLabelNo || "";
@@ -8978,7 +8989,7 @@
         {key: "updateExcise", label: "Excise tracking on this item", type: "select", value: "keep",
           options: [
             {value: "keep", label: "Keep as-is (" + (isItemExciseTracked(item) ? "currently Yes" : "currently No") + ")"},
-            {value: "match", label: "Match the new category's default"}
+            {value: "match", label: "Match the new category's default (excise + track stock)"}
           ]}
       ],
       onSave: function(values){
@@ -8992,6 +9003,7 @@
         item.categoryId = values.categoryId;
         if(values.updateExcise === "match"){
           item.exciseTracked = !!newCat.isExciseCategory;
+          item.trackStock = newCat.trackStock !== false;
         }
         saveData();
         renderItemList();
