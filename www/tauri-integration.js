@@ -10,7 +10,7 @@
   var IS_TAURI = !!(window.__TAURI__ && window.__TAURI__.core);
   window.IS_TAURI = IS_TAURI;
 
-  var APP_VERSION = '0.1.0';
+  var APP_VERSION = '0.1.1';
   var PRODUCT_ID = 'bar-pos';
   var LICENSE_API_BASE = 'https://licensing-platform.pages.dev';
   var LICENSE_STORAGE_KEY = 'barBillLicense_v1';
@@ -265,28 +265,45 @@
   /* ---------- safe close: finish saves -> backup -> close DB -> exit ---------- */
   var closing = false;
   function idle(){ return window.BarbillDB ? window.BarbillDB.idle() : Promise.resolve(); }
+  // Hard exit: the Rust command always works (no plugin permission needed).
+  function hardExit(){
+    try{ window.__TAURI__.core.invoke('force_exit'); }catch(e){}
+    try{ window.__TAURI__.process.exit(0); }catch(e){}
+  }
+  function showClosingOverlay(){
+    try{
+      var o = document.createElement('div');
+      o.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(16,26,51,.85);color:#fff;display:flex;align-items:center;justify-content:center;font:700 18px Arial,sans-serif;';
+      o.textContent = 'Saving and closing...';
+      document.body.appendChild(o);
+    }catch(e){}
+  }
   window.__TAURI__.window.getCurrentWindow().onCloseRequested(function(event){
-    if(!window.__barbillAppStarted) return;      // still on the licence screen: close at once
-    if(closing){ event.preventDefault(); return; }
+    event.preventDefault();                      // we always handle the close ourselves
+    if(closing) return;
     closing = true;
-    event.preventDefault();
-    plog('close-requested');
+    plog('close-requested (started=' + !!window.__barbillAppStarted + ')');
+    if(!window.__barbillAppStarted){ hardExit(); return; }   // licence screen: nothing to save
+    showClosingOverlay();
+    // Watchdog: whatever is stuck, the app is gone after 7 seconds.
+    setTimeout(function(){ plog('watchdog: forcing exit'); hardExit(); }, 7000);
     var work = Promise.race([
       idle().then(function(){ return enqueueBackup(function(){ return writeBackup(false); }); })
         .then(function(){ plog('end-of-day backup ok'); })
         .catch(function(e){ plog('end-of-day backup FAILED: ' + errText(e)); }),
-      sleep(8000).then(function(){ plog('save/backup timed out at 8s'); })
+      sleep(4000).then(function(){ plog('save/backup timed out at 4s'); })
     ]);
     work.then(function(){
       return Promise.race([
         (window.BarbillDB ? window.BarbillDB.flushAndClose() : Promise.resolve()).then(function(){ plog('db closed'); }).catch(function(e){ plog('db close FAILED: ' + errText(e)); }),
-        sleep(4000)
+        sleep(2000)
       ]);
     }).then(function(){
-      return window.__TAURI__.process.exit(0);
+      plog('exiting');
+      hardExit();
     }).catch(function(e){
-      plog('process.exit failed, using destroy(): ' + errText(e));
-      return window.__TAURI__.window.getCurrentWindow().destroy();
+      plog('close sequence error: ' + errText(e));
+      hardExit();
     });
   }).catch(function(e){ console.error('could not register close handler', e); });
 

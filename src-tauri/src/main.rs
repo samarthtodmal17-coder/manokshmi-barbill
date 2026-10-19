@@ -53,6 +53,14 @@ fn open_external(url: String) -> Result<(), String> {
     }
 }
 
+/// Last-resort exit used by the close routine's watchdog, so the app can never
+/// get stuck open if a save/backup step hangs or a window permission is missing.
+#[tauri::command]
+fn force_exit(app: tauri::AppHandle) {
+    app.exit(0);
+    std::process::exit(0);
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(
@@ -63,7 +71,7 @@ fn main() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![get_device_fingerprint, open_external])
+        .invoke_handler(tauri::generate_handler![get_device_fingerprint, open_external, force_exit])
         .run(tauri::generate_context!())
         .expect("error while running Manokshmi BarBill");
 }
