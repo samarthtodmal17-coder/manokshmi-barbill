@@ -53,7 +53,7 @@
   html{ background:var(--bg); }
   body{
     margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Nirmala UI","Mangal",sans-serif;
     background:var(--bg);
     color:var(--text);
     transition:background-color .15s ease, color .15s ease;
@@ -1572,6 +1572,7 @@
           <button class="subtab-btn" data-setup-tab="customers" data-i18n="customers">Customers</button>
           <button class="subtab-btn" data-setup-tab="staff" data-i18n="staff_access">Staff &amp; Access</button>
           <button class="subtab-btn" data-setup-tab="backup" data-i18n="backup_restore">Backup</button>
+          <button class="subtab-btn" data-setup-tab="marathi">Marathi Names</button>
         </div>
 
         <div id="setupSub-business" class="subsection active">
@@ -1847,6 +1848,15 @@
           </div>
         </div>
 
+        <div id="setupSub-marathi" class="subsection">
+          <div class="card">
+            <h2>Marathi Names (मराठी नावे)</h2>
+            <p class="muted">When the app is in Marathi (मर), item, vendor and customer names typed in English are shown in Marathi automatically (spelt by sound). To fix any name, add one line here: English name = मराठी नाव. Example: <b>Royal Stag = रॉयल स्टॅग</b>. Names you already type in Marathi stay as they are.</p>
+            <textarea id="mrWordsText" rows="12" style="width:100%; box-sizing:border-box;" placeholder="Royal Stag = रॉयल स्टॅग&#10;Sharma Traders = शर्मा ट्रेडर्स"></textarea>
+            <button class="btn gold" id="btnSaveMrWords" style="margin-top:10px;">Save Marathi Names</button>
+          </div>
+        </div>
+
         <div id="setupSub-backup" class="subsection">
           <div class="card">
             <h2>Export Backup</h2>
@@ -2054,7 +2064,7 @@
 </div>
 
 <div id="receipt">
-  <div class="receipt-inner" id="receiptContent"></div>
+  <div class="receipt-inner" id="receiptContent" data-no-mr="1"></div>
   <div class="receipt-actions">
     <button class="btn secondary" id="btnClosePreview">Close Preview</button>
     <button class="btn secondary" id="btnSendSms" style="display:none;">Send SMS</button>
@@ -2075,6 +2085,7 @@
      see the typeof-check in showBillReceipt(). -->
 <script src="vendor/qrcode.min.js"></script>
 <script src="sqlite-adapter.js"></script>
+<script src="marathi.js"></script>
 <script src="tauri-integration.js"></script>
 <script>
 (function(){
@@ -2212,6 +2223,7 @@
     document.getElementById("btnToggleLang").textContent = currentLang === "en" ? "EN" : "मर";
     document.documentElement.setAttribute("lang", currentLang === "mr" ? "mr" : "en");
     syncNavTooltips();
+    if(window.MarathiUI) window.MarathiUI.setLang(currentLang);
   }
 
   applyTranslations();
@@ -8110,6 +8122,16 @@
   // Liquor Menu / Food Menu are two views of the same data: the tab you
   // pick decides which categories/items are shown and which type new
   // categories and items are created as.
+  (function(){
+    var ta = document.getElementById("mrWordsText");
+    try{ ta.value = localStorage.getItem("bb_mr_words") || ""; }catch(e){}
+    document.getElementById("btnSaveMrWords").addEventListener("click", function(){
+      try{ localStorage.setItem("bb_mr_words", ta.value); }catch(e){}
+      if(window.MarathiUI) window.MarathiUI.setUserWords(ta.value);
+      showToast("Marathi names saved");
+    });
+  })();
+
   var menuMode = "liquor";
   function applyMenuMode(){
     var sec = document.getElementById("setupSub-items");
