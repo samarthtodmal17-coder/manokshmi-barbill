@@ -1,6 +1,6 @@
 [package]
 name = "manokshmi-barbill"
-version = "0.1.8"
+version = "0.1.9"
 description = "Manokshmi BarBill - bar billing and management (Tauri desktop, SQLite)"
 edition = "2021"
 
