@@ -671,6 +671,43 @@
   .keys-box table{ width:100%; border-collapse:collapse; }
   .keys-box td{ padding:6px 4px; border-bottom:1px solid var(--border); font-size:14px; }
   .keys-box td:first-child{ white-space:nowrap; font-weight:700; width:150px; }
+
+  .change-box{ border:1px solid var(--border); background:var(--surface); border-radius:10px; padding:8px 10px; margin:4px 0 8px; }
+  .change-box .cb-row{ display:flex; align-items:center; gap:8px; }
+  .change-box .cb-row label{ font-size:13px; font-weight:700; white-space:nowrap; }
+  .change-box input{ flex:1; font-size:18px; font-weight:700; text-align:right; padding:6px 8px; }
+  .change-box .cb-notes{ display:flex; gap:6px; margin-top:6px; }
+  .change-box .cb-notes button{ flex:1; padding:7px 0; font-size:13px; font-weight:700; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:8px; cursor:pointer; }
+  .change-box .cb-notes button:hover{ background:var(--surface-hover); }
+  .change-box .cb-out{ margin-top:6px; text-align:right; font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .change-box .cb-out.give{ color:var(--success); } .change-box .cb-out.short{ color:var(--danger); }
+
+  .fav-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(112px, 1fr)); gap:8px; margin:6px 0 4px; }
+  .fav-btn{ --cc:#64708a; position:relative; display:flex; flex-direction:column; justify-content:space-between; gap:4px; min-height:62px; padding:8px 10px; text-align:left; border-radius:10px; cursor:pointer; color:var(--text); background:color-mix(in srgb, var(--cc) 12%, var(--card)); border:1px solid var(--border); border-left:5px solid var(--cc); }
+  .fav-btn:hover{ background:color-mix(in srgb, var(--cc) 22%, var(--card)); }
+  .fav-btn:active{ transform:scale(.97); }
+  .fav-btn .fb-name{ font-size:13px; font-weight:700; line-height:1.2; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .fav-btn .fb-price{ font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .fav-btn .fb-low{ position:absolute; top:4px; right:6px; font-size:12px; font-weight:700; color:#fff; background:var(--danger); border-radius:6px; padding:0 5px; }
+  .fav-btn .fb-star{ position:absolute; bottom:4px; right:6px; font-size:12px; color:var(--gold); }
+
+  .table-tile .t-time{ font-size:12px; font-weight:700; color:var(--muted); margin-top:2px; }
+  .table-tile .t-time.mid{ color:#b86e00; } .table-tile .t-time.long{ color:var(--danger); }
+  .table-tile.selected .t-time{ color:#fff; }
+  th.sortable{ cursor:pointer; user-select:none; white-space:nowrap; }
+  th.sortable:hover{ color:var(--heading); }
+  th.sortable::after{ content:" \2195"; opacity:.35; }
+  th.sortable.asc::after{ content:" \25B2"; opacity:1; } th.sortable.desc::after{ content:" \25BC"; opacity:1; }
+
+  .date-chips{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 2px; }
+  .date-chips button{ padding:4px 11px; font-size:12px; font-weight:600; border-radius:14px; border:1px solid var(--border); background:var(--chip-bg); color:var(--heading); cursor:pointer; }
+  .date-chips button:hover{ background:var(--gold-soft); border-color:var(--gold); }
+  .wiz-steps{ display:flex; gap:6px; margin-bottom:14px; font-size:12px; font-weight:700; color:var(--muted); flex-wrap:wrap; }
+  .wiz-steps span{ padding:4px 10px; border-radius:12px; background:var(--chip-bg); }
+  .wiz-steps span.on{ background:var(--gold); color:#fff; } .wiz-steps span.ok{ background:var(--success); color:#fff; }
+
+  .undo-bar{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%); z-index:10000; display:none; align-items:center; gap:14px; background:#1c2c56; color:#fff; padding:10px 14px 10px 18px; border-radius:12px; box-shadow:var(--shadow-lg); font-size:14px; font-weight:600; }
+  .undo-bar button{ background:var(--gold); color:#fff; border:none; border-radius:8px; padding:6px 16px; font-weight:800; cursor:pointer; font-size:14px; }
 </style>
 </head>
 <body>
@@ -914,7 +951,7 @@
             <div class="card">
               <input type="text" id="posItemSearch" class="pos-search-big" placeholder="Search item / scan barcode  [F2]   e.g. 2*rum">
               <div id="posFavRow" style="display:none; margin-top:8px;">
-                <label data-i18n="favorites">Favorites</label>
+                <label data-i18n="favorites">Favorites</label> <span class="muted" style="font-size:12px;">starred items + top sellers (last 30 days)</span>
                 <div class="cat-chip-row" id="posFavChips"></div>
               </div>
               <div class="item-group-header" id="posItemsToggle" style="margin-top:8px; cursor:pointer;">
@@ -987,6 +1024,11 @@
                 <button type="button" data-pay="Card" class="pm-card">💳 Card <kbd class="kb">Alt+2</kbd></button>
                 <button type="button" data-pay="UPI" class="pm-upi">📱 UPI <kbd class="kb">Alt+3</kbd></button>
                 <button type="button" data-pay="Credit" class="pm-credit">📒 Credit <kbd class="kb">Alt+4</kbd></button>
+              </div>
+              <div id="posChangeBox" class="change-box" style="display:none;">
+                <div class="cb-row"><label for="posTendered">Cash received</label><input type="number" id="posTendered" min="0" step="any" inputmode="decimal" placeholder="0"></div>
+                <div class="cb-notes"><button type="button" data-note="exact">Exact</button><button type="button" data-note="100">100</button><button type="button" data-note="200">200</button><button type="button" data-note="500">500</button><button type="button" data-note="2000">2000</button></div>
+                <div class="cb-out" id="posChangeOut"></div>
               </div>
               <select id="posPaymentMode" style="display:none;">
                 <option value="Cash">Cash</option>
@@ -1393,7 +1435,7 @@
           <div class="card">
             <div class="flex-between">
               <h2>Daily Closing Report</h2>
-              <button class="btn small secondary" id="btnPrintDailyClosing">Print</button>
+              <span><button class="btn small gold" id="btnClosingWizard">Close the Day (step by step)</button> <button class="btn small secondary" id="btnPrintDailyClosing">Print</button></span>
             </div>
             <div class="row">
               <div><label>Date</label><input type="date" id="rptClosingDate"></div>
@@ -2495,7 +2537,9 @@
   // is already correct the instant this is called; the IndexedDB write
   // just needs to catch up in the background, and being async it never
   // freezes the UI the way a big synchronous localStorage write could.
+  var saveSeq = 0;
   function saveData(keys){
+    saveSeq++;
     var useKeys = (keys && keys.length) ? keys : DATA_KEYS;
     var pairs = useKeys.map(function(k){ return {key: k, value: data[k]}; });
     markSaveState("saving");
@@ -2962,6 +3006,11 @@
     function chip(n, text, cls, go, setupTab){
       chips.push('<div class="attn-chip ' + cls + '" data-go="' + go + '"' + (setupTab ? ' data-tab="' + setupTab + '"' : '') + '><b>' + n + '</b><span>' + text + '</span></div>');
     }
+    var todayK = localDateKey(businessNow());
+    var billsToday = data.bills.filter(function(b){ return !b.deleted && dateKey(b.date) === todayK; }).length;
+    if(billsToday && (data.business.lastClosedDate || "") !== todayK){
+      chips.push('<div class="attn-chip" id="chipCloseDay"><b>' + billsToday + '</b><span>bill' + (billsToday > 1 ? 's' : '') + ' today &ndash; day not closed yet. <u>Close the day</u></span></div>');
+    }
     var running = (data.openOrders || []).filter(function(o){ return o && o.lines && o.lines.length; }).length;
     if(running) chip(running, "table" + (running > 1 ? "s" : "") + " with running bill", "", "billing");
     var low = data.items.filter(isLowStock).length;
@@ -2974,6 +3023,7 @@
     if(pay > 0) chip(fmt(pay), "to pay vendors", "", "setup", "vendors");
     if(!chips.length) chip("✓", "All clear – nothing needs attention", "ok", "");
     box.innerHTML = chips.join("");
+    var cc = document.getElementById("chipCloseDay"); if(cc) cc.addEventListener("click", function(){ openClosingWizard(); });
     Array.prototype.forEach.call(box.querySelectorAll(".attn-chip[data-go]"), function(c){
       var g = c.getAttribute("data-go"); if(!g) return;
       c.addEventListener("click", function(){
@@ -3009,6 +3059,263 @@
       });
     });
   }
+
+  /* ---- Custom confirm dialog ----
+     The app asks "if(!confirm(msg)) return;" in 24 places. confirm() must answer
+     immediately, so: show our dialog, answer "no" for now, and when the user
+     presses Confirm, replay the same button click with that message pre-approved. */
+  var confirmCurClick = null, confirmApproved = [], confirmChainTarget = null, confirmReplaying = false, confirmShown = false;
+  document.addEventListener("click", function(e){
+    if(confirmReplaying) return;
+    confirmCurClick = e.target;
+    setTimeout(function(){ confirmCurClick = null; }, 0);
+  }, true);
+  var confirmUndoExcluded = /backup|archive|recovery code|barcode stickers|erases EVERYTHING|Restore \d+ bills/i;
+  var undoTimer = null;
+  function offerUndo(snap, msg){
+    var seq = saveSeq;
+    if(seq === 0) return;
+    var bar = document.getElementById("undoBar");
+    if(!bar){ bar = document.createElement("div"); bar.id = "undoBar"; bar.className = "undo-bar"; document.body.appendChild(bar); }
+    var label = /^delete bill/i.test(msg) ? "Bill deleted" : /^delete|^remove|^cancel|^clear/i.test(msg) ? "Done" : "Saved";
+    bar.innerHTML = '<span data-no-mr="1">' + label + '.</span> <button type="button" id="btnUndo">Undo</button>';
+    bar.style.display = "flex";
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(function(){ bar.style.display = "none"; }, 10000);
+    document.getElementById("btnUndo").addEventListener("click", function(){
+      bar.style.display = "none"; clearTimeout(undoTimer);
+      if(saveSeq !== seq){ showToast("Can't undo - other changes were made after this"); return; }
+      DATA_KEYS.forEach(function(k){ if(k !== "auditLog" && snap[k] !== undefined) data[k] = JSON.parse(snap[k]); });
+      saveData(DATA_KEYS);
+      var active = document.querySelector(".screen.active");
+      switchScreen(active ? active.id.replace("screen-", "") : "dashboard");
+      auditLog("Undo", "Reversed: " + String(msg).slice(0, 120), true);
+      saveData(["auditLog"]);
+      showToast("Undone");
+    });
+  }
+  function confirmDialog(msg, onYes){
+    confirmShown = true;
+    var old = document.getElementById("confirmOverlay"); if(old) old.parentNode.removeChild(old);
+    var danger = /delete|remove|erase|replace|clear|cancel|discard|permanent/i.test(msg);
+    var ov = document.createElement("div");
+    ov.className = "keys-overlay"; ov.id = "confirmOverlay";
+    ov.innerHTML = '<div class="keys-box confirm-box" role="dialog" aria-modal="true" style="width:460px;"><h2>' + (danger ? 'Please confirm' : 'Confirm') + '</h2>' +
+      '<div class="confirm-msg" data-no-mr="1" style="font-size:15px;line-height:1.5;margin-bottom:18px;"></div>' +
+      '<div style="display:flex;gap:10px;justify-content:flex-end;"><button class="btn secondary" id="btnConfirmNo">Cancel</button>' +
+      '<button class="btn ' + (danger ? 'danger' : 'gold') + '" id="btnConfirmYes">' + (danger ? 'Yes, continue' : 'Confirm') + '</button></div></div>';
+    ov.querySelector(".confirm-msg").textContent = msg;
+    document.body.appendChild(ov);
+    function close(){ if(ov.parentNode) ov.parentNode.removeChild(ov); document.removeEventListener("keydown", onKey, true); }
+    function onKey(e){ if(e.key === "Escape"){ e.preventDefault(); e.stopPropagation(); close(); confirmApproved = []; confirmChainTarget = null; } }
+    document.addEventListener("keydown", onKey, true);
+    document.getElementById("btnConfirmNo").addEventListener("click", function(){ close(); confirmApproved = []; confirmChainTarget = null; });
+    document.getElementById("btnConfirmYes").addEventListener("click", function(){ close(); onYes(); });
+    ov.addEventListener("click", function(e){ if(e.target === ov){ close(); confirmApproved = []; confirmChainTarget = null; } });
+    document.getElementById(danger ? "btnConfirmNo" : "btnConfirmYes").focus();
+  }
+  function confirm(msg){
+    if(!(window.__TAURI__ || window.__customConfirm)) return window.confirm(msg);
+    var target;
+    if(confirmReplaying){
+      if(confirmApproved.indexOf(msg) !== -1) return true;
+      target = confirmChainTarget;
+    } else {
+      target = confirmCurClick;
+    }
+    if(!target || !target.click) return window.confirm(msg);
+    if(!confirmReplaying && confirmChainTarget !== target) confirmApproved = [];
+    confirmChainTarget = target;
+    confirmDialog(String(msg), function(){
+      confirmApproved.push(msg);
+      var snap = null;
+      if(!confirmUndoExcluded.test(msg)){ try{ snap = {}; DATA_KEYS.forEach(function(k){ snap[k] = JSON.stringify(data[k]); }); }catch(e){ snap = null; } }
+      confirmReplaying = true; confirmShown = false;
+      try{ target.click(); }finally{ confirmReplaying = false; }
+      if(!confirmShown){
+        confirmApproved = []; confirmChainTarget = null;
+        if(snap) offerUndo(snap, msg);
+      }
+    });
+    return false;
+  }
+
+  /* ---- Close-the-day wizard ---- */
+  function openClosingWizard(){
+    var old = document.getElementById("wizOverlay"); if(old) old.parentNode.removeChild(old);
+    var day = localDateKey(businessNow()), step = 1, st = {counted: "", floatAmt: String(data.business.startingCashFloat || 0)};
+    var ov = document.createElement("div"); ov.className = "keys-overlay"; ov.id = "wizOverlay";
+    document.body.appendChild(ov);
+    function figs(){ buildDailyClosingHtml(day, day, null, parseFloat(st.floatAmt) || 0); return lastClosingFigures; }
+    function runningList(){
+      return (data.openOrders || []).filter(function(o){ return o.items && o.items.length; }).map(function(o){
+        var t = data.tables.filter(function(x){ return x.id === o.tableId; })[0];
+        return {name: t ? t.number : "?", amt: orderTotal(o).total};
+      });
+    }
+    function draw(){
+      var f = figs(), h = '<div class="keys-box" style="width:560px;" role="dialog" aria-modal="true"><div class="wiz-steps">';
+      ["Open bills", "Sales", "Count cash", "Finish"].forEach(function(n, i){ h += '<span class="' + (i + 1 === step ? 'on' : (i + 1 < step ? 'ok' : '')) + '">' + (i + 1) + '. ' + n + '</span>'; });
+      h += '</div><div data-no-mr="1">';
+      if(step === 1){
+        var r = runningList();
+        h += '<h2>Any bills still running?</h2>';
+        if(r.length){
+          h += '<p>These tables still have items. Settle them before closing, or they will not be in today\'s sales:</p><table>';
+          r.forEach(function(x){ h += '<tr><td>Table ' + escapeHtml(x.name) + '</td><td style="text-align:right;">' + fmt(x.amt) + '</td></tr>'; });
+          h += '</table>';
+        } else h += '<p style="color:var(--success);font-weight:700;">✓ No running bills. Good to go.</p>';
+      } else if(step === 2){
+        h += '<h2>Today\'s sales</h2>';
+        if(!f) h += '<p>No bills or expenses today.</p>';
+        else {
+          h += '<table>';
+          Object.keys(f.byMode).sort().forEach(function(m){ h += '<tr><td>' + escapeHtml(m) + '</td><td style="text-align:right;">' + fmt(f.byMode[m]) + '</td></tr>'; });
+          h += '<tr><td><b>Total sales (' + f.bills + ' bills)</b></td><td style="text-align:right;"><b>' + fmt(f.sales) + '</b></td></tr>' +
+               '<tr><td>Expenses paid</td><td style="text-align:right;">' + fmt(f.expenses) + '</td></tr>' +
+               '<tr><td>Credit given (not received)</td><td style="text-align:right;">' + fmt(f.credit) + '</td></tr>' +
+               '<tr><td>UPI / Card (goes to bank)</td><td style="text-align:right;">' + fmt(f.bank) + '</td></tr></table>';
+        }
+      } else if(step === 3){
+        h += '<h2>Count the cash drawer</h2><label>Starting cash / change fund</label><input type="number" id="wizFloat" min="0" step="any" value="' + escapeHtml(st.floatAmt) + '">' +
+             '<label style="margin-top:8px;">Cash counted in drawer now</label><input type="number" id="wizCounted" min="0" step="any" value="' + escapeHtml(st.counted) + '" style="font-size:20px;font-weight:700;">' +
+             '<div style="margin-top:10px;">Expected in drawer: <b>' + fmt(f ? f.expected : (parseFloat(st.floatAmt) || 0)) + '</b></div><div id="wizVar" style="font-size:22px;font-weight:800;margin-top:6px;"></div>';
+      } else {
+        var c = parseFloat(st.counted), exp = f ? f.expected : (parseFloat(st.floatAmt) || 0), diff = isNaN(c) ? null : Math.round((c - exp) * 100) / 100;
+        h += '<h2>Ready to close ' + escapeHtml(day) + '</h2><table><tr><td>Total sales</td><td style="text-align:right;">' + fmt(f ? f.sales : 0) + '</td></tr>' +
+             '<tr><td>Expected cash</td><td style="text-align:right;">' + fmt(exp) + '</td></tr><tr><td>Counted cash</td><td style="text-align:right;">' + (diff === null ? '—' : fmt(c)) + '</td></tr>' +
+             '<tr><td><b>Difference</b></td><td style="text-align:right;color:' + (diff === null || diff === 0 ? 'inherit' : (diff > 0 ? 'var(--success)' : 'var(--danger)')) + ';"><b>' + (diff === null ? 'not counted' : (diff === 0 ? 'Tally ✓' : (diff > 0 ? 'Extra ' : 'Short ') + fmt(Math.abs(diff)))) + '</b></td></tr></table>' +
+             '<p class="muted">Closing records the result in the audit log and opens the printable report.</p>';
+      }
+      h += '</div><div style="display:flex;gap:10px;justify-content:space-between;margin-top:18px;"><button class="btn secondary" id="wizCancel">Cancel</button><span>' +
+           (step > 1 ? '<button class="btn secondary" id="wizBack">Back</button> ' : '') +
+           '<button class="btn gold" id="wizNext">' + (step === 4 ? 'Close the Day &amp; Show Report' : 'Next') + '</button></span></div></div>';
+      ov.innerHTML = h;
+      document.getElementById("wizCancel").addEventListener("click", closeW);
+      var back = document.getElementById("wizBack"); if(back) back.addEventListener("click", function(){ step--; draw(); });
+      document.getElementById("wizNext").addEventListener("click", next);
+      if(step === 3){
+        var ci = document.getElementById("wizCounted"), fi = document.getElementById("wizFloat");
+        function upd(){
+          st.counted = ci.value; var fg = figs();
+          var out = document.getElementById("wizVar"), c2 = parseFloat(ci.value), ex = fg ? fg.expected : (parseFloat(fi.value) || 0);
+          if(isNaN(c2)){ out.textContent = ""; return; }
+          var d2 = Math.round((c2 - ex) * 100) / 100;
+          out.style.color = d2 === 0 ? "var(--success)" : (d2 > 0 ? "var(--success)" : "var(--danger)");
+          out.textContent = d2 === 0 ? "Tally ✓" : (d2 > 0 ? "Extra " : "Short ") + fmt(Math.abs(d2));
+        }
+        ci.addEventListener("input", upd);
+        fi.addEventListener("change", function(){ st.floatAmt = fi.value; st.counted = ci.value; draw(); });
+        upd(); ci.focus();
+      } else document.getElementById("wizNext").focus();
+    }
+    function closeW(){ if(ov.parentNode) ov.parentNode.removeChild(ov); document.removeEventListener("keydown", onKey, true); }
+    function onKey(e){ if(e.key === "Escape"){ e.preventDefault(); e.stopPropagation(); closeW(); } }
+    document.addEventListener("keydown", onKey, true);
+    function next(){
+      if(step < 4){ step++; draw(); return; }
+      var f = figs(), c = parseFloat(st.counted), exp = f ? f.expected : (parseFloat(st.floatAmt) || 0);
+      var diff = isNaN(c) ? null : Math.round((c - exp) * 100) / 100;
+      data.business.lastClosedDate = day;
+      data.business.startingCashFloat = parseFloat(st.floatAmt) || 0;
+      auditLog("Day closed", day + " · sales " + fmt(f ? f.sales : 0) + " · expected cash " + fmt(exp) + (diff === null ? " · cash not counted" : " · counted " + fmt(c) + " · " + (diff === 0 ? "tally" : (diff > 0 ? "extra " : "short ") + fmt(Math.abs(diff)))), diff !== null && diff !== 0);
+      saveData(["business", "auditLog"]);
+      closeW();
+      switchScreen("reports");
+      var tb = document.querySelector('[data-report-tab="dailyclosing"]'); if(tb) tb.click();
+      document.getElementById("rptClosingDate").value = day; document.getElementById("rptClosingDateTo").value = "";
+      document.getElementById("rptStartingCash").value = String(parseFloat(st.floatAmt) || 0);
+      document.getElementById("rptCountedCash").value = isNaN(c) ? "" : String(c);
+      document.getElementById("btnRunDailyClosing").click();
+      showToast("Day closed ✓");
+    }
+    draw();
+  }
+  document.getElementById("btnClosingWizard").addEventListener("click", openClosingWizard);
+
+  /* ---- Date quick-pick chips on every From/To filter ---- */
+  (function(){
+    var PAIRS = [["purHistFrom","purHistTo"],["poListFrom","poListTo"],["expFrom","expTo"],["rptClosingDate","rptClosingDateTo"],
+      ["rptItemFrom","rptItemTo"],["rptCatFrom","rptCatTo"],["rptBestFrom","rptBestTo"],["rptPnlFrom","rptPnlTo"],["scmExportFromDaily","scmExportToDaily"],
+      ["scmExportFrom","scmExportTo"],["rptSplitFrom","rptSplitTo"],["vsFrom","vsTo"],["csFrom","csTo"],["rptExciseDate",null]];
+    function key(d){ return localDateKey(d); }
+    function range(kind){
+      var n = businessNow(), t = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+      function addD(x){ return new Date(t.getFullYear(), t.getMonth(), t.getDate() + x); }
+      if(kind === "today") return [key(t), key(t)];
+      if(kind === "yesterday") return [key(addD(-1)), key(addD(-1))];
+      if(kind === "7d") return [key(addD(-6)), key(t)];
+      if(kind === "month") return [key(new Date(t.getFullYear(), t.getMonth(), 1)), key(t)];
+      if(kind === "lastmonth") return [key(new Date(t.getFullYear(), t.getMonth() - 1, 1)), key(new Date(t.getFullYear(), t.getMonth(), 0))];
+      return ["", ""];
+    }
+    PAIRS.forEach(function(p){
+      var fromEl = document.getElementById(p[0]); if(!fromEl) return;
+      var toEl = p[1] ? document.getElementById(p[1]) : null;
+      var wrapRow = fromEl.parentNode && fromEl.parentNode.parentNode; if(!wrapRow || !wrapRow.parentNode) return;
+      var bar = document.createElement("div"); bar.className = "date-chips";
+      var kinds = toEl ? [["today","Today"],["yesterday","Yesterday"],["7d","Last 7 days"],["month","This month"],["lastmonth","Last month"],["all","All"]] : [["today","Today"],["yesterday","Yesterday"]];
+      kinds.forEach(function(k){
+        var b = document.createElement("button"); b.type = "button"; b.textContent = k[1]; b.setAttribute("data-dc", k[0]);
+        b.addEventListener("click", function(){
+          var r = range(k[0]);
+          fromEl.value = r[0]; if(toEl) toEl.value = (p[0] === "rptClosingDate" && r[0] === r[1]) ? "" : r[1];
+          [fromEl, toEl].forEach(function(el){ if(el){ el.dispatchEvent(new Event("input", {bubbles: true})); el.dispatchEvent(new Event("change", {bubbles: true})); } });
+          // also press the card's own Apply / Run / Show button so the list refreshes at once
+          var scope = wrapRow.parentNode, go = null;
+          Array.prototype.forEach.call(scope.querySelectorAll("button"), function(x){
+            if(!go && x.getAttribute("data-dc") === null && /^(apply|run|show|filter|search|go|view)\b/i.test((x.textContent || "").trim())) go = x;
+          });
+          if(go) go.click();
+        });
+        bar.appendChild(b);
+      });
+      wrapRow.parentNode.insertBefore(bar, wrapRow);
+    });
+  })();
+
+  /* ---- Click-to-sort on any plain list table ---- */
+  function sortableTable(th){
+    var table = th.closest ? th.closest("table") : null;
+    if(!table || table.getAttribute("data-nosort") || table.querySelector("tbody td[colspan], tbody td[rowspan]")) return null;
+    var rows = table.querySelectorAll("tbody tr");
+    if(rows.length < 2) return null;
+    return table;
+  }
+  function cellSortValue(td){
+    var t = (td.textContent || "").replace(/\s+/g, " ").trim();
+    var n = parseFloat(t.replace(/[^0-9.\-]/g, ""));
+    if(t && /^[^A-Za-z]*[0-9]/.test(t) && !isNaN(n)) return {n: n, s: t.toLowerCase()};
+    return {n: null, s: t.toLowerCase()};
+  }
+  document.addEventListener("click", function(e){
+    var th = e.target && e.target.closest ? e.target.closest("th") : null;
+    if(!th || th.querySelector("input, button, select")) return;
+    var table = sortableTable(th); if(!table) return;
+    var ths = Array.prototype.slice.call(th.parentNode.children), col = ths.indexOf(th);
+    var tbody = table.querySelector("tbody"), rows = Array.prototype.slice.call(tbody.querySelectorAll("tr"));
+    if(rows.some(function(r){ return r.children.length !== ths.length; })) return;
+    var dir = th.classList.contains("asc") ? -1 : 1;
+    ths.forEach(function(x){ x.classList.remove("asc", "desc"); x.classList.add("sortable"); });
+    th.classList.add(dir === 1 ? "asc" : "desc");
+    rows.sort(function(a, b){
+      var x = cellSortValue(a.children[col]), y = cellSortValue(b.children[col]);
+      if(x.n !== null && y.n !== null) return (x.n - y.n) * dir;
+      return x.s < y.s ? -dir : (x.s > y.s ? dir : 0);
+    }).forEach(function(r){ tbody.appendChild(r); });
+  });
+  // Mark headers as sortable (shows the arrow hint) whenever the screen content changes
+  function markSortableHeaders(){
+    Array.prototype.forEach.call(document.querySelectorAll(".screen.active table thead th"), function(th){
+      if(th.classList.contains("sortable") || th.querySelector("input, button, select")) return;
+      if(sortableTable(th)) th.classList.add("sortable");
+    });
+  }
+  setInterval(markSortableHeaders, 1500);
+  setInterval(function(){
+    var b = document.getElementById("screen-billing");
+    if(b && b.classList.contains("active")) renderPosTableMap();
+  }, 60000);
 
   var TEXT_ZOOMS = [0.9, 1, 1.1, 1.2, 1.3];
   function applyTextZoom(i){
@@ -3112,7 +3419,15 @@
         if(order && order.items.length) occupiedCount++;
         var tile = document.createElement("div");
         tile.className = "table-tile" + (order && order.items.length ? " occupied" : "") + (currentTableId === t.id ? " selected" : "");
-        tile.innerHTML = '<div class="t-no">' + escapeHtml(t.number) + '</div><div class="t-amt">' + (amt > 0 ? fmt(amt) : "Free") + '</div>';
+        var seated = "", seatCls = "";
+        if(order && order.items.length){
+          if(!order.startedAt) order.startedAt = Date.now();
+          var mins = Math.max(0, Math.floor((Date.now() - order.startedAt) / 60000));
+          seated = mins >= 60 ? Math.floor(mins / 60) + "h " + (mins % 60) + "m" : mins + "m";
+          seatCls = mins >= 90 ? " long" : (mins >= 60 ? " mid" : "");
+        } else if(order && order.startedAt){ delete order.startedAt; }
+        tile.innerHTML = '<div class="t-no">' + escapeHtml(t.number) + '</div><div class="t-amt">' + (amt > 0 ? fmt(amt) : "Free") + '</div>' +
+          (seated ? '<div class="t-time' + seatCls + '" data-no-mr="1" title="Time since first item">⏱ ' + seated + '</div>' : '');
         tile.addEventListener("click", function(){ selectTable(t.id); });
         tile.tabIndex = 0;
         tile.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); selectTable(t.id); } });
@@ -3781,7 +4096,7 @@
     if(!order || order.items.length === 0){
       list.innerHTML = '<div class="empty-state">No items added yet.</div>';
       document.getElementById("posSubtotal").textContent = fmt(0);
-      document.getElementById("posTotal").textContent = fmt(0);
+      document.getElementById("posTotal").textContent = fmt(0); updateChangeDue(0);
       return;
     }
     list.innerHTML = "";
@@ -3816,7 +4131,7 @@
         var t = orderTotal(order);
         document.getElementById("posSubtotal").textContent = fmt(t.subtotal);
         document.getElementById("posServiceChargeAmt").textContent = fmt(t.serviceCharge);
-        document.getElementById("posTotal").textContent = fmt(t.total);
+        document.getElementById("posTotal").textContent = fmt(t.total); updateChangeDue(t.total);
       });
       row.querySelector(".cart-rate").addEventListener("change", function(){
         var std = stdPriceForLine(c);
@@ -3836,7 +4151,7 @@
     var t = orderTotal(order);
     document.getElementById("posSubtotal").textContent = fmt(t.subtotal);
     document.getElementById("posServiceChargeAmt").textContent = fmt(t.serviceCharge);
-    document.getElementById("posTotal").textContent = fmt(t.total);
+    document.getElementById("posTotal").textContent = fmt(t.total); updateChangeDue(t.total);
     var selRow = list.querySelector(".cart-row.kbd-selected");
     if(selRow) selRow.scrollIntoView({block: "nearest"});
   }
@@ -3916,6 +4231,34 @@
       sel.dispatchEvent(new Event("change"));
     });
   });
+
+  /* ---- Cash received / change due ---- */
+  var posLastTotal = 0;
+  function updateChangeDue(total){
+    posLastTotal = total || 0;
+    var box = document.getElementById("posChangeBox"); if(!box) return;
+    var mode = document.getElementById("posPaymentMode").value;
+    var split = document.getElementById("posSplitEnabled") && document.getElementById("posSplitEnabled").checked;
+    var show = mode === "Cash" && !split && posLastTotal > 0;
+    box.style.display = show ? "" : "none";
+    var inp = document.getElementById("posTendered"), out = document.getElementById("posChangeOut");
+    if(!show){ inp.value = ""; out.textContent = ""; out.className = "cb-out"; return; }
+    var got = parseFloat(inp.value);
+    if(isNaN(got) || inp.value === ""){ out.textContent = ""; out.className = "cb-out"; return; }
+    var diff = Math.round((got - posLastTotal) * 100) / 100;
+    if(diff >= 0){ out.className = "cb-out give"; out.textContent = "Change: " + fmt(diff); }
+    else { out.className = "cb-out short"; out.textContent = "Short: " + fmt(-diff); }
+  }
+  document.getElementById("posTendered").addEventListener("input", function(){ updateChangeDue(posLastTotal); });
+  Array.prototype.forEach.call(document.querySelectorAll("#posChangeBox .cb-notes button"), function(b){
+    b.addEventListener("click", function(){
+      var n = b.getAttribute("data-note");
+      document.getElementById("posTendered").value = n === "exact" ? String(posLastTotal) : n;
+      updateChangeDue(posLastTotal);
+    });
+  });
+  document.getElementById("posPaymentMode").addEventListener("change", function(){ updateChangeDue(posLastTotal); });
+  document.getElementById("posSplitEnabled").addEventListener("change", function(){ updateChangeDue(posLastTotal); });
 
   document.getElementById("posPaymentMode").addEventListener("change", function(){
     syncPayButtons();
@@ -4267,21 +4610,42 @@
     window.print();
   });
 
+  function topSellerIds(limit){
+    var cutoff = Date.now() - 30 * 86400000, qty = {};
+    data.bills.forEach(function(b){
+      if(b.deleted || new Date(b.date).getTime() < cutoff) return;
+      (b.items || []).forEach(function(l){ if(l.itemId) qty[l.itemId] = (qty[l.itemId] || 0) + (l.qty || 1); });
+    });
+    return Object.keys(qty).sort(function(a, b){ return qty[b] - qty[a]; }).slice(0, limit);
+  }
+
+  // One-tap grid: starred items first, then the best sellers of the last 30 days.
   function renderPosFavChips(){
     var favRow = document.getElementById("posFavRow");
     var wrap = document.getElementById("posFavChips");
-    var favs = data.items.filter(function(i){ return i.isFavorite; });
+    var MAX = 16;
+    var favs = data.items.filter(function(i){ return i.isFavorite && i.saleRate > 0; });
+    var star = favs.length;
+    topSellerIds(MAX + favs.length).forEach(function(id){
+      if(favs.length >= MAX) return;
+      var it = data.items.filter(function(x){ return x.id === id; })[0];
+      if(it && !it.isFavorite && it.saleRate > 0) favs.push(it);
+    });
+    favs = favs.slice(0, MAX);
     if(favs.length === 0){ favRow.style.display = "none"; wrap.innerHTML = ""; return; }
     favRow.style.display = "block";
+    wrap.className = "fav-grid";
     wrap.innerHTML = "";
-    favs.forEach(function(item){
-      var chip = document.createElement("div");
-      chip.tabIndex = 0;
-      chip.className = "cat-chip";
-      chip.style.setProperty("--cc", catColorById(item.categoryId));
-      chip.textContent = item.name;
-      chip.addEventListener("click", function(){ addItemToCart(item); });
-      wrap.appendChild(chip);
+    favs.forEach(function(item, idx){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "fav-btn";
+      b.style.setProperty("--cc", catColorById(item.categoryId));
+      var low = item.trackStock && isLowStock(item);
+      b.innerHTML = '<span class="fb-name">' + escapeHtml(item.name) + '</span><span class="fb-price">' + fmt(item.saleRate) + '</span>' +
+        (low ? '<span class="fb-low">Low</span>' : '') + (idx < star ? '<span class="fb-star">★</span>' : '');
+      b.addEventListener("click", function(){ pickItemInteractive(item, 1); });
+      wrap.appendChild(b);
     });
   }
 
@@ -6606,7 +6970,9 @@
     return out;
   }
 
+  var lastClosingFigures = null;
   function buildDailyClosingHtml(fromKey, toKey, countedCash, startingCash){
+    lastClosingFigures = null;
     var bills = billsInRange(fromKey, toKey);
     var expenses = expensesInRange(fromKey, toKey);
     var recovered = ledgerPaymentsInRange("customer", fromKey, toKey);   // old credit collected
@@ -6644,6 +7010,7 @@
     // running costs) when working out what should physically be sitting
     // in the drawer.
     var expectedInDrawer = floatAmt + cashCollected + recovered.cash - totalExpenses - vendorPaid.cash;
+    lastClosingFigures = {sales: totalSales, bills: bills.length, byMode: byMode, expenses: totalExpenses, cash: cashCollected, bank: bankCollected, credit: byMode["Credit"] || 0, recoveredCash: recovered.cash, vendorCash: vendorPaid.cash, floatAmt: floatAmt, expected: expectedInDrawer};
 
     // ---- Headline numbers, up top, easy to scan at a glance ----
     var html = '<div style="color:var(--muted, #777); font-size:12px; margin-bottom:10px;">' + escapeHtml(periodLabel) + ' &middot; ' + bills.length + ' bill' + (bills.length === 1 ? "" : "s") + '</div>';
