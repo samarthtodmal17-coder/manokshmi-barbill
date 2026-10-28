@@ -1859,6 +1859,12 @@
 
         <div id="setupSub-backup" class="subsection">
           <div class="card">
+            <h2>Menu &amp; Stock Health Check</h2>
+            <p class="muted">Checks that the menu, stock, barcodes and running bills agree with each other, and fixes the safe problems in one click.</p>
+            <button class="btn gold" id="btnRunHealthCheck">Run Health Check</button>
+            <div id="healthCheckResults" style="margin-top:10px;"></div>
+          </div>
+          <div class="card">
             <h2>Export Backup</h2>
             <p class="muted">Everything -- bills, stock, purchases, customers, vendors -- lives only in this browser. Download a backup regularly so a cleared cache or a new computer can't wipe your data.</p>
             <button class="btn gold" id="btnExportBackup" data-i18n="export_backup">Download Backup File</button>
@@ -2663,7 +2669,7 @@
         var tg = e.target ? e.target.tagName : "";
         if(tg === "BUTTON" || tg === "TEXTAREA") return;
         e.preventDefault();
-        if(enterAdvance(e.target, document.getElementById("formModal") || overlay)) return;
+        if(enterAdvance(e.target, overlay)) return;
         document.getElementById("formModalSave").click();
       }
     }
@@ -2812,28 +2818,42 @@
   // Undoes every stock log entry tagged with this refId (a deleted bill or
   // a deleted purchase), then re-derives each affected item/location's
   // current stock and every remaining entry's running balance from scratch.
+  // Undoes the stock effect of every log entry tagged with this refId by
+  // applying the OPPOSITE change to the item's current stock. (It used to
+  // rebuild stock from the log alone, which zeroed any stock that had no log
+  // entries -- e.g. data imported from an older version.)
   function reverseStockEntries(refId){
     if(!refId) return;
-    var affected = {};
-    data.stockLog.forEach(function(e){
-      if(e.refId === refId) affected[e.itemId + "::" + e.location] = {itemId: e.itemId, location: e.location};
+    var removed = data.stockLog.filter(function(e){ return e.refId === refId; });
+    if(removed.length === 0) return;
+    var delta = {};
+    removed.forEach(function(e){
+      var k = e.itemId + "::" + e.location;
+      delta[k] = (delta[k] || 0) + (e.qtyChange || 0);
     });
-    if(Object.keys(affected).length === 0) return;
     data.stockLog = data.stockLog.filter(function(e){ return e.refId !== refId; });
-    Object.keys(affected).forEach(function(key){
-      recalculateStock(affected[key].itemId, affected[key].location);
+    Object.keys(delta).forEach(function(k){
+      var parts = k.split("::");
+      var item = data.items.find(function(m){ return m.id === parts[0]; });
+      if(item){
+        if(parts[1] === "godown") item.stockGodown = Math.round(((item.stockGodown || 0) - delta[k]) * 10000) / 10000;
+        else item.stockCounter = Math.round(((item.stockCounter || 0) - delta[k]) * 10000) / 10000;
+      }
+      recalculateStock(parts[0], parts[1]);
     });
   }
 
+  // Re-derives each log entry's running balance so the LAST balance equals the
+  // item's current stock figure (any un-logged opening amount is preserved).
   function recalculateStock(itemId, location){
     var item = data.items.find(function(m){ return m.id === itemId; });
+    if(!item) return;
     var entries = data.stockLog.filter(function(e){ return e.itemId === itemId && e.location === location; })
       .sort(function(a, b){ return new Date(a.date) - new Date(b.date); });
-    var running = 0;
-    entries.forEach(function(e){ running += (e.qtyChange || 0); e.balanceAfter = running; });
-    if(!item) return;
-    if(location === "counter") item.stockCounter = running;
-    else if(location === "godown") item.stockGodown = running;
+    var current = (location === "godown" ? item.stockGodown : item.stockCounter) || 0;
+    var sum = entries.reduce(function(s, e){ return s + (e.qtyChange || 0); }, 0);
+    var running = current - sum;
+    entries.forEach(function(e){ running += (e.qtyChange || 0); e.balanceAfter = Math.round(running * 10000) / 10000; });
   }
 
   /* ================= DASHBOARD ================= */
@@ -3712,6 +3732,9 @@
       sel.appendChild(opt);
       return;
     }
+    var ph = document.createElement("option");   // forces an explicit choice -- never silently bills the first customer
+    ph.value = ""; ph.textContent = "-- select customer --";
+    sel.appendChild(ph);
     data.customers.forEach(function(c){
       var opt = document.createElement("option");
       opt.value = c.id; opt.textContent = c.name;
@@ -4221,8 +4244,8 @@
         if(bill.customerId){
           var cust = data.customers.find(function(c){ return c.id === bill.customerId; });
           if(cust){
-            cust.balance = Math.max(0, (cust.balance || 0) - bill.total);
-            logCustomerLedger(cust, "reversal", -bill.total, bill.id, "Reversal -- bill " + bill.billNo + " deleted");
+            var appliedDel = reduceBalance(cust, bill.total);
+            logCustomerLedger(cust, "reversal", -appliedDel, bill.id, "Reversal -- bill " + bill.billNo + " deleted" + (appliedDel < bill.total ? " (customer had already paid " + fmt(bill.total - appliedDel) + " of it)" : ""));
           }
         }
         // Soft delete: the bill record is kept forever for audit -- it's
@@ -4416,6 +4439,9 @@
       sel.appendChild(opt);
       return;
     }
+    var ph = document.createElement("option");   // forces an explicit choice -- never silently bills the first customer
+    ph.value = ""; ph.textContent = "-- select customer --";
+    sel.appendChild(ph);
     data.customers.forEach(function(c){
       var opt = document.createElement("option");
       opt.value = c.id; opt.textContent = c.name;
@@ -4499,8 +4525,8 @@
     if(editingBill.customerId){
       var oldCust = data.customers.find(function(c){ return c.id === editingBill.customerId; });
       if(oldCust){
-        oldCust.balance = Math.max(0, (oldCust.balance || 0) - editingBill.total);
-        logCustomerLedger(oldCust, "reversal", -editingBill.total, editingBill.id, "Reversal -- bill " + editingBill.billNo + " edited");
+        var appliedEdit = reduceBalance(oldCust, editingBill.total);
+        logCustomerLedger(oldCust, "reversal", -appliedEdit, editingBill.id, "Reversal -- bill " + editingBill.billNo + " edited" + (appliedEdit < editingBill.total ? " (customer had already paid " + fmt(editingBill.total - appliedEdit) + " of it)" : ""));
       }
     }
 
@@ -4870,7 +4896,7 @@
     if(entries.length === 0){ box.innerHTML = '<div class="empty-state">No opening stock entries yet.</div>'; return; }
     var html = '<table><thead><tr><th>As of</th><th>Item</th><th>Location</th><th style="text-align:right;">Qty</th><th>Notes</th><th></th></tr></thead><tbody>';
     entries.forEach(function(e){
-      html += '<tr><td>' + escapeHtml(e.asOfDate) + '</td><td>' + escapeHtml(e.itemName) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + e.qty + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delopening="' + e.id + '">Delete</button></td></tr>';
+      html += '<tr><td>' + escapeHtml(e.asOfDate) + '</td><td>' + escapeHtml(liveItemName(e.itemId, e.itemName)) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + e.qty + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delopening="' + e.id + '">Delete</button></td></tr>';
     });
     html += '</tbody></table>';
     box.innerHTML = html;
@@ -4976,7 +5002,7 @@
       if(expanded){
         html += '<table><thead><tr><th>Item</th><th>Location</th><th style="text-align:right;">Qty</th><th>Reason</th><th>Notes</th><th></th></tr></thead><tbody>';
         groupEntries.forEach(function(e){
-          html += '<tr><td>' + escapeHtml(e.itemName) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + e.qty + '</td><td>' + escapeHtml(e.reason) + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delwaste="' + e.id + '">Delete</button></td></tr>';
+          html += '<tr><td>' + escapeHtml(liveItemName(e.itemId, e.itemName)) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + e.qty + '</td><td>' + escapeHtml(e.reason) + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delwaste="' + e.id + '">Delete</button></td></tr>';
         });
         html += '</tbody></table>';
       }
@@ -5031,6 +5057,9 @@
       sel.appendChild(opt);
       return;
     }
+    var ph = document.createElement("option");   // forces an explicit choice -- never silently books to the first vendor
+    ph.value = ""; ph.textContent = "-- select vendor --";
+    sel.appendChild(ph);
     data.vendors.forEach(function(v){
       var opt = document.createElement("option");
       opt.value = v.id; opt.textContent = v.name;
@@ -5214,6 +5243,8 @@
     var vendorId = document.getElementById("purVendorSelect").value;
     if(!vendorId){ showToast("Add and select a vendor first"); return; }
     var vendor = data.vendors.find(function(v){ return v.id === vendorId; });
+    var gone = purCart.filter(function(c){ return !data.items.some(function(i){ return i.id === c.itemId; }); });
+    if(gone.length){ showToast(gone[0].name + " was removed from the menu -- remove it from this entry first"); return; }
     var invoiceNo = document.getElementById("purInvoiceNo").value.trim();
     var invoiceDate = document.getElementById("purInvoiceDate").value;
     var permitNo = document.getElementById("purPermitNo").value.trim();
@@ -5292,7 +5323,8 @@
         var amt = values.amount;
         if(amt === null || isNaN(amt) || amt <= 0) return "Enter a valid amount";
         var before = vendor.balance || 0;
-        vendor.balance = Math.max(0, before - amt);
+        if(amt - before > 0.005) return "Amount is more than the outstanding balance (" + fmt(before) + ")";
+        reduceBalance(vendor, amt);
         vendor.editLog = vendor.editLog || [];
         vendor.editLog.push({date: new Date().toISOString(), summary: "Payment paid: " + fmt(amt) + (values.mode ? " via " + values.mode : "") + " (balance " + fmt(before) + " -> " + fmt(vendor.balance) + ")"});
         logVendorLedger(vendor, "payment", -amt, null, "Payment paid" + (values.mode ? " via " + values.mode : ""));
@@ -5394,8 +5426,8 @@
         if(purchase.paymentMode === "Credit"){
           var vendor = data.vendors.find(function(v){ return v.id === purchase.vendorId; });
           if(vendor){
-            vendor.balance = Math.max(0, (vendor.balance || 0) - purchase.total);
-            logVendorLedger(vendor, "reversal", -purchase.total, purchase.id, "Reversal -- purchase " + purchase.purchaseNo + " deleted");
+            var appliedPur = reduceBalance(vendor, purchase.total);
+            logVendorLedger(vendor, "reversal", -appliedPur, purchase.id, "Reversal -- purchase " + purchase.purchaseNo + " deleted" + (appliedPur < purchase.total ? " (" + fmt(purchase.total - appliedPur) + " of it was already paid)" : ""));
           }
         }
         // If this purchase came from receiving against a Purchase Order,
@@ -5562,6 +5594,8 @@
     var vendorId = document.getElementById("poVendorSelect").value;
     if(!vendorId){ showToast("Add and select a vendor first"); return; }
     var vendor = data.vendors.find(function(v){ return v.id === vendorId; });
+    var goneP = poCart.filter(function(c){ return !data.items.some(function(i){ return i.id === c.itemId; }); });
+    if(goneP.length){ showToast(goneP[0].name + " was removed from the menu -- remove it from this order first"); return; }
     var expectedDate = document.getElementById("poExpectedDate").value;
     var notes = document.getElementById("poNotes").value.trim();
 
@@ -5608,7 +5642,8 @@
           '<td><span style="color:' + poStatusColor(po.status) + '; font-weight:600;">' + po.status + '</span></td>' +
           '<td>' +
           (canReceive ? '<button class="btn small gold" data-receivepo="' + po.id + '">Receive</button> ' : '') +
-          (canCancelOrDelete ? '<button class="btn small secondary" data-cancelpo="' + po.id + '">Cancel</button> <button class="btn small danger" data-delpo="' + po.id + '">Delete</button>' : '') +
+          (canCancelOrDelete ? '<button class="btn small secondary" data-cancelpo="' + po.id + '">Cancel</button> ' : '') +
+          ((canCancelOrDelete || (po.status === "Cancelled" && !hasReceipts)) ? '<button class="btn small danger" data-delpo="' + po.id + '">Delete</button>' : '') +
           '</td></tr>';
       });
       html += '</tbody></table>';
@@ -5775,6 +5810,8 @@
       if(qty > 0) receivedNow.push({itemId: itemId, qty: qty, rate: rate});
     });
     if(receivedNow.length === 0){ showToast("Enter at least one item quantity to receive"); return; }
+    var goneR = receivedNow.filter(function(r){ return !data.items.some(function(i){ return i.id === r.itemId; }); });
+    if(goneR.length){ var pn = po.items.find(function(i){ return i.itemId === goneR[0].itemId; }); showToast((pn ? pn.name : "An item") + " was removed from the menu -- set its receive quantity to 0"); return; }
 
     var invoiceNo = document.getElementById("poReceiveInvoiceNo").value.trim();
     var invoiceDate = document.getElementById("poReceiveInvoiceDate").value;
@@ -6032,7 +6069,7 @@
     var assignedAny = false;
     data.items.forEach(function(item){
       if(!item.barcodeValue){
-        item.barcodeValue = String(data.business.nextItemCode++);
+        item.barcodeValue = nextFreeBarcode();
         assignedAny = true;
       }
     });
@@ -6389,10 +6426,31 @@
     return '<div style="display:flex; justify-content:space-between; padding:6px 0;' + (bold ? ' border-top:1px solid var(--border, #ddd); margin-top:4px; font-weight:700;' : '') + '"><span>' + label + '</span><span' + (color ? ' style="color:' + color + ';"' : '') + '>' + value + '</span></div>';
   }
 
+  // Customer recoveries and vendor payments recorded in Ledger in a date range,
+  // split into cash (touches the drawer) and other (UPI / cheque / bank).
+  function ledgerPaymentsInRange(kind, fromKey, toKey){
+    var recs = kind === "customer" ? data.customers : data.vendors;
+    var out = {cash: 0, other: 0};
+    recs.forEach(function(r){
+      (r.ledgerEntries || []).forEach(function(e){
+        if(e.type !== "payment") return;
+        var k = dateKey(e.date);
+        if((fromKey && k < fromKey) || (toKey && k > toKey)) return;
+        var m = /\bvia\s+(.+)$/i.exec(e.note || "");
+        var mode = m ? m[1] : "";
+        var amt = Math.abs(e.amount || 0);
+        if(!mode || /cash/i.test(mode)) out.cash += amt; else out.other += amt;
+      });
+    });
+    return out;
+  }
+
   function buildDailyClosingHtml(fromKey, toKey, countedCash, startingCash){
     var bills = billsInRange(fromKey, toKey);
     var expenses = expensesInRange(fromKey, toKey);
-    if(bills.length === 0 && expenses.length === 0) return '<div class="empty-state">No bills or expenses in this date range.</div>';
+    var recovered = ledgerPaymentsInRange("customer", fromKey, toKey);   // old credit collected
+    var vendorPaid = ledgerPaymentsInRange("vendor", fromKey, toKey);    // suppliers paid
+    if(bills.length === 0 && expenses.length === 0 && !recovered.cash && !recovered.other && !vendorPaid.cash && !vendorPaid.other) return '<div class="empty-state">No bills or expenses in this date range.</div>';
     var byMode = {};
     function addMode(mode, amt){ byMode[mode] = (byMode[mode] || 0) + amt; }
     var totalSales = 0, totalDiscount = 0, totalService = 0, totalTax = 0;
@@ -6412,7 +6470,7 @@
     // digital mode) -- this is money that lands in the bank, not the drawer,
     // so it's tracked and shown separately from the cash reconciliation below.
     var bankCollected = Object.keys(byMode).reduce(function(s, mode){
-      return s + (mode === "Cash" ? 0 : byMode[mode]);
+      return s + ((mode === "Cash" || mode === "Credit") ? 0 : byMode[mode]);   // credit sales are not money received
     }, 0);
     var totalExpenses = expenses.reduce(function(s, e){ return s + (e.amount || 0); }, 0);
     var periodLabel = fromKey === toKey ? fromKey : (fromKey + " to " + toKey);
@@ -6424,7 +6482,7 @@
     // out of the cash drawer (the usual real-world case for day-to-day
     // running costs) when working out what should physically be sitting
     // in the drawer.
-    var expectedInDrawer = floatAmt + cashCollected - totalExpenses;
+    var expectedInDrawer = floatAmt + cashCollected + recovered.cash - totalExpenses - vendorPaid.cash;
 
     // ---- Headline numbers, up top, easy to scan at a glance ----
     var html = '<div style="color:var(--muted, #777); font-size:12px; margin-bottom:10px;">' + escapeHtml(periodLabel) + ' &middot; ' + bills.length + ' bill' + (bills.length === 1 ? "" : "s") + '</div>';
@@ -6472,7 +6530,9 @@
     html += '<h3 style="margin:0 0 6px; font-size:13px; color:var(--muted, #777); text-transform:uppercase; letter-spacing:.03em;">Cash Reconciliation (Physical Drawer)</h3>';
     html += closingRow("Starting Cash / Change Fund", fmt(floatAmt));
     html += closingRow("+ Cash Sales", fmt(cashCollected));
+    if(recovered.cash > 0) html += closingRow("+ Credit Recovered (cash)", fmt(recovered.cash));
     html += closingRow("- Expenses Paid from Drawer", fmt(totalExpenses));
+    if(vendorPaid.cash > 0) html += closingRow("- Vendor Payments (cash)", fmt(vendorPaid.cash));
     html += closingRow("Total Cash in Drawer", fmt(expectedInDrawer), true);
     if(countedCash !== null && countedCash !== undefined && !isNaN(countedCash)){
       var variance = countedCash - expectedInDrawer;
@@ -6573,7 +6633,8 @@
       totalTax += (b.tax || 0);
       b.items.forEach(function(c){
         var item = data.items.find(function(i){ return i.id === c.itemId; });
-        cogs += (item && item.costPrice ? item.costPrice : 0) * c.qty;
+        // pegs use a fraction of a bottle -- cost is per full bottle
+        cogs += (item && item.costPrice ? item.costPrice : 0) * (item ? stockQtyForCartLine(item, c) : c.qty);
       });
     });
     var netRevenue = grossRevenue - totalTax;
@@ -7508,7 +7569,8 @@
         var amt = values.amount;
         if(amt === null || isNaN(amt) || amt <= 0) return "Enter a valid amount";
         var before = customer.balance || 0;
-        customer.balance = Math.max(0, before - amt);
+        if(amt - before > 0.005) return "Amount is more than the outstanding balance (" + fmt(before) + ")";
+        reduceBalance(customer, amt);
         customer.editLog = customer.editLog || [];
         customer.editLog.push({date: new Date().toISOString(), summary: "Payment received: " + fmt(amt) + (values.mode ? " via " + values.mode : "") + " (balance " + fmt(before) + " -> " + fmt(customer.balance) + ")"});
         logCustomerLedger(customer, "payment", -amt, null, "Payment received" + (values.mode ? " via " + values.mode : ""));
@@ -8122,6 +8184,7 @@
   // Liquor Menu / Food Menu are two views of the same data: the tab you
   // pick decides which categories/items are shown and which type new
   // categories and items are created as.
+  document.getElementById("btnRunHealthCheck").addEventListener("click", renderHealthCheck);
   (function(){
     var ta = document.getElementById("mrWordsText");
     try{ ta.value = localStorage.getItem("bb_mr_words") || ""; }catch(e){}
@@ -8360,7 +8423,6 @@
     liquorBox.innerHTML = liquorCats.length ? liquorCats.map(rowHtml).join("") : '<div class="empty-state">No liquor categories yet.</div>';
     foodBox.innerHTML = foodCats.length ? foodCats.map(rowHtml).join("") : '<div class="empty-state">No food &amp; other categories yet.</div>';
 
-    wireFoodQuickEdit(foodBox);
     [liquorBox, foodBox].forEach(function(box){
       box.querySelectorAll("[data-bulkrate]").forEach(function(btn){
         btn.addEventListener("click", function(){
@@ -8382,16 +8444,27 @@
             onSave: function(values){
               var v = parseFloat(values.value);
               if(isNaN(v)) return "Enter a valid number";
+              var touchedLines = 0;
               itemsInCat.forEach(function(i){
+                var o = snapItem(i);
                 var newRate;
                 if(values.mode === "pct") newRate = i.saleRate * (1 + v / 100);
                 else if(values.mode === "amt") newRate = i.saleRate + v;
                 else newRate = v;
                 i.saleRate = Math.max(0, Math.round(newRate * 100) / 100);
+                // Peg prices move with the bottle price when changing by %, so
+                // bottle and pegs never drift apart.
+                if(values.mode === "pct" && i.pegPrices){
+                  [30, 60, 90].forEach(function(ml){
+                    if(i.pegPrices[ml] > 0) i.pegPrices[ml] = Math.max(0, Math.round(i.pegPrices[ml] * (1 + v / 100) * 100) / 100);
+                  });
+                }
+                touchedLines += syncOpenOrdersForItem(i, o);
               });
-              saveData();
-              renderItemList();
-              showToast("Rates updated for " + itemsInCat.length + " item(s) in " + cat.name);
+              auditLog("Bulk menu price change", cat.name + " · " + itemsInCat.length + " item(s) · " + values.mode + " " + v, false);
+              saveData(["items", "openOrders", "auditLog"]);
+              refreshMenuViews();
+              showToast("Rates updated for " + itemsInCat.length + " item(s) in " + cat.name + (touchedLines ? " · " + touchedLines + " running bill line(s) updated" : ""));
             }
           });
         });
@@ -8410,33 +8483,19 @@
       box.querySelectorAll("[data-togglekot]").forEach(function(btn){
         btn.addEventListener("click", function(){
           var cat = data.categories.find(function(c){ return c.id === btn.getAttribute("data-togglekot"); });
-          if(!cat) return;
-          cat.sendToKot = !(cat.sendToKot !== false);
-          saveData(); renderCategoryList();
+          if(cat) applyCategoryFlag(cat, "kot");
         });
       });
       box.querySelectorAll("[data-toggleexcise]").forEach(function(btn){
         btn.addEventListener("click", function(){
           var cat = data.categories.find(function(c){ return c.id === btn.getAttribute("data-toggleexcise"); });
-          if(!cat) return;
-          cat.isExciseCategory = !cat.isExciseCategory;
-          // Items store their own excise flag; keep every item in this category in step.
-          var nEx = 0;
-          data.items.forEach(function(i){ if(i.categoryId === cat.id){ i.exciseTracked = cat.isExciseCategory; nEx++; } });
-          showToast(cat.name + ": Excise " + (cat.isExciseCategory ? "Yes" : "No") + " (" + nEx + " items updated)");
-          saveData(); renderCategoryList(); renderItemList();
+          if(cat) applyCategoryFlag(cat, "excise");
         });
       });
       box.querySelectorAll("[data-toggletrack]").forEach(function(btn){
         btn.addEventListener("click", function(){
           var cat = data.categories.find(function(c){ return c.id === btn.getAttribute("data-toggletrack"); });
-          if(!cat) return;
-          cat.trackStock = !(cat.trackStock !== false);
-          // Apply to existing items too, so Stock screen matches the menu.
-          var nTr = 0;
-          data.items.forEach(function(i){ if(i.categoryId === cat.id){ i.trackStock = cat.trackStock; nTr++; } });
-          showToast(cat.name + ": Track Stock " + (cat.trackStock ? "Yes" : "No") + " (" + nTr + " items updated)");
-          saveData(); renderCategoryList(); renderItemList();
+          if(cat) applyCategoryFlag(cat, "track");
         });
       });
     });
@@ -8597,7 +8656,7 @@
       var item = {
         id: uid("item"), name: t.name, categoryId: categoryId, saleRate: t.rate,
         trackStock: trackStock, stockCounter: 0, stockGodown: 0, lowStockThreshold: threshold,
-        barcodeValue: String(data.business.nextItemCode++),
+        barcodeValue: nextFreeBarcode(),
         itemCode: generateItemCode(categoryId),
         exciseTracked: isLiquor
       };
@@ -8695,6 +8754,223 @@
     return html;
   }
 
+  /* ================= MENU SYNC CORE =================
+     One place that keeps everything in step when the menu changes: running
+     (open) bills, pending purchase orders, saved lists and every other
+     screen. All menu edit paths (quick edit, Edit / Brand Info, Move,
+     bulk rate change, inline rate, category switches, remove) go through it. */
+  // Next barcode number that no item already uses (a hand-typed or imported
+  // barcode can equal the running counter, which used to create duplicates).
+  function nextFreeBarcode(){
+    var used = {};
+    data.items.forEach(function(i){ if(i.barcodeValue) used[String(i.barcodeValue).trim()] = true; });
+    var n = parseInt(data.business.nextItemCode, 10) || 1001;
+    while(used[String(n)]) n++;
+    data.business.nextItemCode = n + 1;
+    return String(n);
+  }
+  // Reduces a customer/vendor balance by up to `amount` (never below zero) and
+  // returns the amount actually removed, so the ledger always matches the balance.
+  function reduceBalance(rec, amount){
+    var before = rec.balance || 0;
+    var applied = Math.max(0, Math.min(before, amount));
+    rec.balance = Math.round((before - applied) * 100) / 100;
+    return applied;
+  }
+  function snapItem(it){
+    return {
+      name: it.name, saleRate: it.saleRate, categoryId: it.categoryId,
+      pegPrices: it.pegPrices ? JSON.parse(JSON.stringify(it.pegPrices)) : null,
+      trackStock: !!it.trackStock, exciseTracked: !!isItemExciseTracked(it)
+    };
+  }
+  function liveItemName(itemId, fallback){
+    var it = data.items.find(function(i){ return i.id === itemId; });
+    return it ? it.name : (fallback || "(removed item)");
+  }
+  function runningOrdersWithItem(itemId){
+    var out = [];
+    data.openOrders.forEach(function(o){
+      if((o.items || []).some(function(c){ return c.itemId === itemId; })){
+        var t = data.tables.find(function(x){ return x.id === o.tableId; });
+        out.push(t ? "Table " + t.number : "a table");
+      }
+    });
+    return out;
+  }
+  function pendingPoWithItem(itemId){
+    return data.purchaseOrders.filter(function(po){
+      return (po.status === "Pending" || po.status === "Partial") &&
+        (po.items || []).some(function(i){ return i.itemId === itemId && (i.receivedQty || 0) < i.orderedQty; });
+    });
+  }
+  // Pushes a changed menu item into running bills (name always; price only for
+  // lines still at the OLD menu price -- a rate the cashier typed by hand is
+  // never overwritten) and into purchase order line names.
+  function syncOpenOrdersForItem(item, old){
+    var changed = 0;
+    data.openOrders.forEach(function(order){
+      (order.items || []).forEach(function(line){
+        if(line.itemId !== item.id) return;
+        if(line.name !== item.name){ line.name = item.name; changed++; }
+        var oldStd = line.pegMl ? (old.pegPrices && old.pegPrices[line.pegMl]) : old.saleRate;
+        var newStd = line.pegMl ? (item.pegPrices && item.pegPrices[line.pegMl]) : item.saleRate;
+        if(typeof oldStd === "number" && typeof newStd === "number" && newStd > 0 &&
+           Math.abs(newStd - oldStd) > 0.0001 && Math.abs((line.price || 0) - oldStd) < 0.001){
+          line.price = newStd; changed++;
+        }
+      });
+    });
+    data.purchaseOrders.forEach(function(po){
+      (po.items || []).forEach(function(i){ if(i.itemId === item.id && i.name !== item.name) i.name = item.name; });
+    });
+    // Entries still being typed on the Purchase / Purchase Order screens
+    [typeof purCart !== "undefined" ? purCart : null, typeof poCart !== "undefined" ? poCart : null].forEach(function(cart){
+      (cart || []).forEach(function(c){ if(c.itemId === item.id && c.name !== item.name) c.name = item.name; });
+    });
+    return changed;
+  }
+  function refreshMenuViews(skipList){
+    [skipList ? null : renderItemList, renderItemSelects, skipList ? null : renderCategoryList, renderPosCart, renderPosTableMap].forEach(function(f){
+      if(!f) return;
+      try{ f(); }catch(e){ console.error("refreshMenuViews", e); }
+    });
+  }
+  // Call AFTER mutating `item`; `old` is snapItem(item) taken BEFORE.
+  function commitItemEdit(item, old, keepFocus){
+    var n = syncOpenOrdersForItem(item, old);
+    if(old.trackStock !== !!item.trackStock){
+      auditLog("Stock tracking changed", item.name + " · " + (item.trackStock ? "now tracked" : "no longer tracked") + " (stock on hand " + itemTotalStock(Object.assign({}, item, {trackStock: true})) + ")", false);
+    }
+    saveData(["items", "openOrders", "purchaseOrders", "auditLog"]);
+    refreshMenuViews(keepFocus);
+    if(n > 0) showToast("Running tables updated: " + n + " bill line(s)");
+    if(!old.trackStock && item.trackStock && itemTotalStock(item) <= 0) showToast(item.name + ": stock tracking is on but stock is 0 -- add Opening Stock in the Stock screen");
+    return n;
+  }
+  // Category-level switches: change the category AND every item in it, so
+  // Stock / Billing / Excise reports always agree with the menu.
+  function applyCategoryFlag(cat, flag){
+    var value;
+    if(flag === "excise"){ cat.isExciseCategory = !cat.isExciseCategory; value = cat.isExciseCategory; }
+    else if(flag === "track"){ cat.trackStock = !(cat.trackStock !== false); value = cat.trackStock; }
+    else if(flag === "kot"){ cat.sendToKot = !(cat.sendToKot !== false); value = cat.sendToKot; }
+    var changed = 0, missingType = 0;
+    data.items.forEach(function(i){
+      if(i.categoryId !== cat.id) return;
+      if(flag === "excise"){ i.exciseTracked = value; if(value && !i.liquorType) missingType++; changed++; }
+      else if(flag === "track"){ i.trackStock = value; changed++; }
+    });
+    auditLog("Category setting changed", cat.name + " · " + flag + " → " + (value ? "Yes" : "No") + (changed ? " · " + changed + " item(s) updated" : ""), false);
+    saveData(["categories", "items", "auditLog"]);
+    refreshMenuViews();
+    var msg = cat.name + ": " + (flag === "excise" ? "Excise" : flag === "track" ? "Track Stock" : "KOT") + " " + (value ? "Yes" : "No") + (changed ? " (" + changed + " items updated)" : "");
+    if(missingType) msg += " -- " + missingType + " item(s) still need a Liquor Type (Edit / Brand Info)";
+    showToast(msg);
+    return {changed: changed, missingType: missingType, value: value};
+  }
+  // Returns an error text if the item can't be removed right now, else "".
+  function itemRemovalBlocker(item){
+    var tables = runningOrdersWithItem(item.id);
+    if(tables.length) return item.name + " is on a running bill (" + tables.join(", ") + ") -- settle or clear it first";
+    return "";
+  }
+  function applyRateChange(item, newRate, sourceNote){
+    var old = snapItem(item);
+    if(old.saleRate === newRate) return false;
+    auditLog("Menu price changed", item.name + " · " + fmt(old.saleRate) + " → " + fmt(newRate) + (sourceNote ? " · " + sourceNote : ""), false);
+    item.saleRate = newRate;
+    commitItemEdit(item, old);
+    return true;
+  }
+
+  /* ---------- Menu & Stock Health Check ---------- */
+  function runMenuHealthCheck(){
+    var issues = [];
+    var catById = {}; data.categories.forEach(function(c){ catById[c.id] = c; });
+    // 1. items pointing at a category that no longer exists
+    var orphan = data.items.filter(function(i){ return !catById[i.categoryId]; });
+    if(orphan.length) issues.push({sev: "error", text: orphan.length + " item(s) have no valid category: " + orphan.slice(0, 5).map(function(i){ return i.name; }).join(", ") + ". Use Move to put them in a category.", fix: null});
+    // 2. running bills with items that no longer exist
+    var ghostLines = 0;
+    data.openOrders.forEach(function(o){ (o.items || []).forEach(function(c){ if(!data.items.some(function(i){ return i.id === c.itemId; })) ghostLines++; }); });
+    if(ghostLines) issues.push({sev: "error", text: ghostLines + " line(s) on running bills refer to items that were removed. Clear those lines before billing.", fix: null});
+    // 3. running bills out of step with the menu (name / price at old menu price)
+    var stale = 0;
+    data.openOrders.forEach(function(o){ (o.items || []).forEach(function(c){
+      var it = data.items.find(function(i){ return i.id === c.itemId; });
+      if(it && c.name !== it.name) stale++;
+    }); });
+    if(stale) issues.push({sev: "warn", text: stale + " running-bill line(s) show an old item name.", fixLabel: "Update names", fix: function(){
+      data.openOrders.forEach(function(o){ (o.items || []).forEach(function(c){ var it = data.items.find(function(i){ return i.id === c.itemId; }); if(it) c.name = it.name; }); });
+      saveData(["openOrders"]);
+    }});
+    // 4. excise flag disagrees with its category
+    var exMis = data.items.filter(function(i){ var c = catById[i.categoryId]; return c && i.exciseTracked !== undefined && !!i.exciseTracked !== !!c.isExciseCategory; });
+    if(exMis.length) issues.push({sev: "info", text: exMis.length + " item(s) have an Excise setting different from their category (" + exMis.slice(0, 4).map(function(i){ return i.name; }).join(", ") + "). Fine if intentional.", fixLabel: "Match category", fix: function(){
+      exMis.forEach(function(i){ i.exciseTracked = !!catById[i.categoryId].isExciseCategory; });
+      saveData(["items"]);
+    }});
+    // 5. track-stock flag disagrees with its category default
+    var trMis = data.items.filter(function(i){ var c = catById[i.categoryId]; return c && !!i.trackStock !== (c.trackStock !== false); });
+    if(trMis.length) issues.push({sev: "info", text: trMis.length + " item(s) have a Track Stock setting different from their category (" + trMis.slice(0, 4).map(function(i){ return i.name; }).join(", ") + "). Fine if intentional.", fixLabel: "Match category", fix: function(){
+      trMis.forEach(function(i){ i.trackStock = catById[i.categoryId].trackStock !== false; });
+      saveData(["items"]);
+    }});
+    // 6. excise items without a liquor type (report would silently default to Spirits)
+    var noType = data.items.filter(function(i){ return isItemExciseTracked(i) && !i.liquorType; });
+    if(noType.length) issues.push({sev: "warn", text: noType.length + " excise item(s) have no Liquor Type: " + noType.slice(0, 5).map(function(i){ return i.name; }).join(", ") + ". Open Edit / Brand Info and choose one.", fix: null});
+    // 7. missing / duplicate codes and barcodes
+    var seenB = {}, dupB = [], seenC = {}, dupC = [];
+    data.items.forEach(function(i){
+      var b = String(i.barcodeValue || "").trim(); if(b){ if(seenB[b]) dupB.push(i); else seenB[b] = true; }
+      var c = String(i.itemCode || "").trim().toLowerCase(); if(c){ if(seenC[c]) dupC.push(i); else seenC[c] = true; }
+    });
+    var noBar = data.items.filter(function(i){ return !String(i.barcodeValue || "").trim(); });
+    if(dupB.length || noBar.length) issues.push({sev: "warn", text: (dupB.length ? dupB.length + " item(s) share a barcode. " : "") + (noBar.length ? noBar.length + " item(s) have no barcode." : ""), fixLabel: "Assign new barcodes", fix: function(){
+      dupB.concat(noBar).forEach(function(i){ i.barcodeValue = nextFreeBarcode(); });
+      saveData(["items", "business"]);
+    }});
+    if(dupC.length) issues.push({sev: "warn", text: dupC.length + " item(s) share an item code: " + dupC.slice(0, 5).map(function(i){ return i.name; }).join(", ") + ".", fixLabel: "Assign new codes", fix: function(){
+      dupC.forEach(function(i){ i.itemCode = generateItemCode(i.categoryId); });
+      saveData(["items"]);
+    }});
+    // 8. stock problems
+    var neg = data.items.filter(function(i){ return i.trackStock && ((i.stockCounter || 0) < 0 || (i.stockGodown || 0) < 0); });
+    if(neg.length) issues.push({sev: "warn", text: neg.length + " tracked item(s) have negative stock: " + neg.slice(0, 5).map(function(i){ return i.name; }).join(", ") + ". Record the missing purchase or opening stock.", fix: null});
+    var drift = data.items.filter(function(i){
+      if(!i.trackStock) return false;
+      var logged = data.stockLog.filter(function(e){ return e.itemId === i.id; });
+      if(!logged.length) return false;
+      var sumC = 0, sumG = 0;
+      logged.forEach(function(e){ if(e.location === "godown") sumG += e.qtyChange || 0; else sumC += e.qtyChange || 0; });
+      return Math.abs(sumC - (i.stockCounter || 0)) > 0.01 || Math.abs(sumG - (i.stockGodown || 0)) > 0.01;
+    });
+    if(drift.length) issues.push({sev: "info", text: drift.length + " item(s) have a stock figure that differs from the sum of their stock log (can be normal after opening stock or an archive): " + drift.slice(0, 4).map(function(i){ return i.name; }).join(", ") + ".", fix: null});
+    // 9. duplicate names
+    var seenN = {}, dupN = [];
+    data.items.forEach(function(i){ var k = itemNameKey(i.name); if(seenN[k]) dupN.push(i); else seenN[k] = true; });
+    if(dupN.length) issues.push({sev: "warn", text: dupN.length + " item(s) have a duplicate name: " + dupN.slice(0, 5).map(function(i){ return i.name; }).join(", ") + ". Rename or remove one.", fix: null});
+    return issues;
+  }
+  function renderHealthCheck(){
+    var box = document.getElementById("healthCheckResults");
+    var issues = runMenuHealthCheck();
+    if(!issues.length){ box.innerHTML = '<div class="empty-state">All clear -- menu, stock and running bills agree.</div>'; return; }
+    var color = {error: "#b42318", warn: "#b54708", info: "#475467"};
+    box.innerHTML = issues.map(function(is, idx){
+      return '<div style="padding:8px 0; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:center; justify-content:space-between;"><span style="color:' + color[is.sev] + ';">' +
+        (is.sev === "error" ? "⛔ " : is.sev === "warn" ? "⚠ " : "ℹ ") + escapeHtml(is.text) + '</span>' +
+        (is.fix ? '<button class="btn small gold" data-hcfix="' + idx + '">' + escapeHtml(is.fixLabel || "Fix") + '</button>' : '') + '</div>';
+    }).join("");
+    box.querySelectorAll("[data-hcfix]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var is = issues[parseInt(btn.getAttribute("data-hcfix"), 10)];
+        if(is && is.fix){ is.fix(); auditLog("Health check fix", is.text, false); refreshMenuViews(); showToast("Fixed"); renderHealthCheck(); }
+      });
+    });
+  }
+
   function wireFoodQuickEdit(box){
     box.querySelectorAll("[data-fe]").forEach(function(el){
       var item = data.items.find(function(i){ return i.id === el.getAttribute("data-id"); });
@@ -8710,6 +8986,7 @@
       });
       el.addEventListener("change", function(){
         var v = el.type === "checkbox" ? el.checked : el.value.trim();
+        var oldSnap = snapItem(item);
         if(kind === "name"){
           if(!v){ showToast("Name can't be empty"); el.value = item.name; return; }
           var dupe = findDuplicateItem(v, null, item.id);
@@ -8739,10 +9016,11 @@
         } else if(kind === "track"){
           item.trackStock = !!v;
         }
-        saveData(["items"]);
+        // Re-draw the list only when the row moves/renames; otherwise keep the
+        // cursor where it is so Enter/Tab-through price entry stays fast.
+        commitItemEdit(item, oldSnap, !(kind === "cat" || kind === "name"));
         el.classList.add("fe-saved");
         setTimeout(function(){ el.classList.remove("fe-saved"); }, 900);
-        if(kind === "cat" || kind === "name") renderItemList();
       });
     });
     var applyBtn = box.querySelector("#btnFoodBulkApply");
@@ -8752,14 +9030,18 @@
         if(isNaN(pct) || pct === 0){ showToast("Enter a percentage, e.g. 10 or -5"); return; }
         var ids = Array.prototype.slice.call(box.querySelectorAll('[data-fe="rate"]')).map(function(x){ return x.getAttribute("data-id"); });
         if(!confirm("Change the price of " + ids.length + " item(s) by " + pct + "%?")) return;
+        var touched = 0;
         ids.forEach(function(id){
           var it = data.items.find(function(i){ return i.id === id; });
-          if(it) it.saleRate = Math.max(0, Math.round(it.saleRate * (1 + pct / 100)));
+          if(!it) return;
+          var o = snapItem(it);
+          it.saleRate = Math.max(0, Math.round(it.saleRate * (1 + pct / 100)));
+          touched += syncOpenOrdersForItem(it, o);
         });
         auditLog("Bulk menu price change", ids.length + " food item(s) changed by " + pct + "%", false);
-        saveData(["items"]);
-        renderItemList();
-        showToast("Prices updated for " + ids.length + " item(s)");
+        saveData(["items", "openOrders", "auditLog"]);
+        refreshMenuViews();
+        showToast("Prices updated for " + ids.length + " item(s)" + (touched ? " · " + touched + " running bill line(s) updated" : ""));
       });
     }
   }
@@ -8781,6 +9063,7 @@
 
     liquorBox.innerHTML = buildItemGroupsHtml(liquorItems, "No liquor items yet.", term);
     foodBox.innerHTML = buildFoodQuickEditHtml(foodItems);
+    wireFoodQuickEdit(foodBox);   // price / name / category / stock typed straight into the list
 
     [liquorBox, foodBox].forEach(function(box){
     box.querySelectorAll("[data-togglegroup]").forEach(function(el){
@@ -8795,14 +9078,19 @@
         var id = btn.getAttribute("data-rmitem");
         var item = data.items.find(function(i){ return i.id === id; });
         if(!item) return;
+        var blocker = itemRemovalBlocker(item);
+        if(blocker){ showToast("Can't remove: " + blocker); return; }
         var totalStock = item.trackStock ? itemTotalStock(item) : 0;
+        var pendPo = pendingPoWithItem(item.id);
+        if(pendPo.length && !confirm(item.name + " is still on " + pendPo.length + " pending purchase order(s) (" + pendPo.map(function(p){ return p.poNo; }).join(", ") + "). Remove anyway?")) return;
         if(totalStock > 0){
           if(!confirm("This item still has " + totalStock + " units of stock worth " + fmt(inventoryValue(item, "counter") + inventoryValue(item, "godown")) + " -- deleting it discards that stock with no record. Log it as Wastage first if you want a paper trail. Delete anyway?")) return;
         } else {
           if(!confirm("Remove this item?")) return;
         }
         data.items = data.items.filter(function(i){ return i.id !== id; });
-        saveData(); renderItemList();
+        auditLog("Menu item removed", item.name, false);
+        saveData(); refreshMenuViews();
       });
     });
     box.querySelectorAll("[data-editbrand]").forEach(function(btn){
@@ -8822,8 +9110,8 @@
         var item = data.items.find(function(i){ return i.id === btn.getAttribute("data-togglefav"); });
         if(!item) return;
         item.isFavorite = !item.isFavorite;
-        saveData();
-        renderItemList();
+        saveData(["items"]);
+        refreshMenuViews();
       });
     });
     box.querySelectorAll("[data-itemrate]").forEach(function(input){
@@ -8832,8 +9120,7 @@
         if(!item) return;
         var v = parseFloat(input.value);
         if(isNaN(v) || v < 0){ input.value = item.saleRate; showToast("Enter a valid rate"); return; }
-        item.saleRate = v;
-        saveData();
+        if(!applyRateChange(item, v)) return;
         showToast("Rate updated for " + item.name);
       });
     });
@@ -8842,7 +9129,7 @@
         var item = data.items.find(function(i){ return i.id === btn.getAttribute("data-barcode"); });
         if(!item) return;
         if(!item.barcodeValue){
-          item.barcodeValue = String(data.business.nextItemCode++);
+          item.barcodeValue = nextFreeBarcode();
           saveData();
         }
         printBarcodeSticker(item);
@@ -8928,6 +9215,8 @@
         if(values.exciseTracked === "yes" && !values.liquorType){
           return "Pick a Liquor Type -- required for excise items so the report groups it correctly (Spirits, Beer, Wine, or MML)";
         }
+        var oldSnap = snapItem(item);
+        if(newName !== item.name) auditLog("Menu name changed", item.name + " → " + newName, false);
         item.name = newName;
         item.itemCode = values.itemCode || item.itemCode;
         item.exciseTracked = values.exciseTracked === "yes";
@@ -8956,8 +9245,7 @@
         }
         item.barcodeValue = newBarcode || item.barcodeValue;
         item.lowStockThreshold = (values.lowStockThreshold === null || values.lowStockThreshold === "" || isNaN(values.lowStockThreshold) || values.lowStockThreshold < 0) ? 0 : Number(values.lowStockThreshold);
-        saveData();
-        renderItemList();
+        commitItemEdit(item, oldSnap);
         showToast("Brand info saved for " + item.name);
       }
     });
@@ -9022,13 +9310,14 @@
           showToast("Already in " + newCat.name);
           return;
         }
+        var oldSnapMv = snapItem(item);
         item.categoryId = values.categoryId;
         if(values.updateExcise === "match"){
           item.exciseTracked = !!newCat.isExciseCategory;
           item.trackStock = newCat.trackStock !== false;
         }
-        saveData();
-        renderItemList();
+        auditLog("Menu item moved", item.name + " → " + newCat.name, false);
+        commitItemEdit(item, oldSnapMv);
         showToast(item.name + " moved to " + newCat.name);
       }
     });

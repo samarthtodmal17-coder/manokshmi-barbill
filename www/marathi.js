@@ -1788,7 +1788,28 @@
 "kolhapur": "कोल्हापूर",
 "solapur": "सोलापूर",
 "aurangabad": "औरंगाबाद",
-"maharashtra": "महाराष्ट्र"
+"maharashtra": "महाराष्ट्र",
+"menu & stock health check": "मेनू आणि साठा तपासणी",
+"run health check": "तपासणी चालवा",
+"checks that the menu, stock, barcodes and running bills agree with each other, and fixes the safe problems in one click.": "मेनू, साठा, बारकोड आणि चालू बिले एकमेकांशी जुळतात का ते तपासते आणि सुरक्षित समस्या एका क्लिकमध्ये दुरुस्त करते.",
+"all clear -- menu, stock and running bills agree.": "सर्व ठीक -- मेनू, साठा आणि चालू बिले जुळतात.",
+"fixed": "दुरुस्त केले",
+"fix": "दुरुस्त करा",
+"match category": "श्रेणीप्रमाणे करा",
+"update names": "नावे अद्ययावत करा",
+"assign new barcodes": "नवीन बारकोड द्या",
+"assign new codes": "नवीन कोड द्या",
+"running tables updated:": "चालू टेबल अद्ययावत:",
+"bill line(s)": "बिल ओळी",
+"running bill line(s) updated": "चालू बिल ओळी अद्ययावत",
+"can't remove:": "काढता येत नाही:",
+"is on a running bill": "चालू बिलावर आहे",
+"settle or clear it first": "आधी बिल पूर्ण करा किंवा साफ करा",
+"menu item removed": "मेनू वस्तू काढली",
+"menu item moved": "मेनू वस्तू हलवली",
+"category setting changed": "श्रेणी सेटिंग बदलले",
+"stock tracking changed": "साठा ट्रॅकिंग बदलले",
+"was removed from the menu": "मेनूमधून काढली आहे"
 };
   var MAXN = 40;
   var active = false, observer = null, origTitle = null;
