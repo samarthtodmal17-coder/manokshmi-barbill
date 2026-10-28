@@ -30,7 +30,7 @@ const lookups = js;
 const orphans = [];
 gen.forEach(a => {
   const q = new RegExp('\\[data-' + a + '[\\]=\\^\\$\\*~|]|getAttribute\\(\\s*["\']data-' + a + '["\']|dataset\\.' + a.replace(/-([a-z])/g, (_, c) => c.toUpperCase()) + '|hasAttribute\\(\\s*["\']data-' + a);
-  if (!q.test(lookups) && !/data-i18n/.test('data-' + a) && a !== 'varitem') orphans.push(a);
+  if (!q.test(lookups) && !/data-i18n/.test('data-' + a) && a !== 'varitem' && a !== 'no-mr') orphans.push(a);
 });
 if (orphans.length) out.push(['ERROR', 'data-attributes generated but never read anywhere (handler never wired)', orphans]);
 
@@ -47,7 +47,7 @@ for (let i = 0; i < starts.length; i++) {
   all.forEach(a => {
     if (/^i18n/.test(a)) return;
     const read = new RegExp('\\[data-' + a + '[\\]=\\^\\$\\*~|]').test(js);
-    if (!read && a !== 'varitem' && !new RegExp('getAttribute\\(\\s*["\'\']data-' + a).test(js)) perFn.push(starts[i].name + ' -> data-' + a);
+    if (!read && a !== 'varitem' && a !== 'no-mr' && !new RegExp('getAttribute\\(\\s*["\'\']data-' + a).test(js)) perFn.push(starts[i].name + ' -> data-' + a);
   });
 }
 if (perFn.length) out.push(['ERROR', 'generated actions with no reader', perFn]);

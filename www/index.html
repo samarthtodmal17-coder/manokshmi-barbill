@@ -143,7 +143,7 @@
     color:#fff;
     box-shadow:inset 3px 0 0 var(--gold);
   }
-  .vendor-watermark-header{ font-size:11px; letter-spacing:0.3px; color:var(--muted,#8a92a8); white-space:nowrap; margin-left:14px; align-self:center; }
+  .vendor-watermark-header{ font-size:12px; letter-spacing:0.3px; color:var(--muted,#8a92a8); white-space:nowrap; margin-left:14px; align-self:center; }
   @media (max-width:900px){ .vendor-watermark-header{ display:none; } }
   .sidebar-foot{
     padding:16px 20px;
@@ -379,7 +379,7 @@
   .search-result-wrap:last-child .peg-btn-row{ border-bottom:none; }
   .search-result-wrap:last-child .search-result-row{ border-bottom:none; }
   .peg-btn-row{ display:flex; flex-wrap:wrap; gap:6px; padding:0 10px 8px; border-bottom:1px solid var(--border); background:var(--surface); }
-  .peg-btn-row button{ font-size:11px; padding:3px 8px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+  .peg-btn-row button{ font-size:12px; padding:3px 8px; border-radius:6px; border:1px solid var(--border); background:#fff; cursor:pointer; }
   .peg-btn-row button:hover{ background:var(--gold); color:#fff; border-color:var(--gold); }
 
   .cart-row{ display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
@@ -391,12 +391,12 @@
   .cart-row.kbd-selected{ background:var(--gold-soft); border-radius:8px; }
   #setupSub-items.mode-liquor .menu-food{ display:none !important; }
   #setupSub-items.mode-food .menu-liq{ display:none !important; }
-  .kbd-hint{ font-size:11px; color:var(--muted); margin-top:6px; }
+  .kbd-hint{ font-size:12px; color:var(--muted); margin-top:6px; }
   /* ===== Billing redesign: 3 columns (tables | items | bill), colour-coded ===== */  #screen-billing .pos-tables{ flex:0 0 250px; min-width:200px; order:1; }  #screen-billing .pos-items{ flex:1 1 420px; min-width:320px; order:2; display:flex; flex-direction:column; min-height:0; }  #screen-billing .pos-order{ flex:0 0 410px; min-width:340px; order:3; }  #screen-billing .pos-items > .card, #screen-billing .pos-order > .card{ flex:1; min-height:0; margin-bottom:0; display:flex; flex-direction:column; overflow-y:auto; }  #screen-billing .pos-items > .card{ overflow:hidden; }  #screen-billing #posItemsPanel{ flex:1; min-height:0; display:flex; flex-direction:column; }  #screen-billing .pos-search-big{ font-size:16px; padding:12px 14px; border-width:2px; }
 
-  /* Table status colours: green = free, amber = running bill, navy = selected */  #screen-billing .table-legend{ display:flex; gap:12px; font-size:11px; color:var(--muted); margin:6px 0 10px; flex-wrap:wrap; }  #screen-billing .table-legend .lg-dot{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }  #screen-billing .lg-dot.free{ background:var(--success); }  #screen-billing .lg-dot.running{ background:#e8890c; }  #screen-billing .lg-dot.sel{ background:var(--navy); }  #screen-billing .table-grid{ grid-template-columns:repeat(auto-fill, minmax(70px, 1fr)); }  #screen-billing .table-tile{ background:color-mix(in srgb, var(--success) 11%, var(--card)); border:2px solid color-mix(in srgb, var(--success) 45%, transparent); padding:10px 4px; }  #screen-billing .table-tile .t-amt{ color:var(--success); font-weight:600; }  #screen-billing .table-tile.occupied{ background:color-mix(in srgb, #e8890c 20%, var(--card)); border-color:#e8890c; }  #screen-billing .table-tile.occupied .t-amt{ color:#b45f00; font-weight:800; font-size:12px; }  [data-theme="dark"] #screen-billing .table-tile.occupied .t-amt{ color:#ffb55c; }  #screen-billing .table-tile.selected{ background:var(--navy); border-color:var(--gold); }  #screen-billing .table-tile.selected .t-no, #screen-billing .table-tile.selected .t-amt{ color:#fff; }
+  /* Table status colours: green = free, amber = running bill, navy = selected */  #screen-billing .table-legend{ display:flex; gap:12px; font-size:12px; color:var(--muted); margin:6px 0 10px; flex-wrap:wrap; }  #screen-billing .table-legend .lg-dot{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }  #screen-billing .lg-dot.free{ background:var(--success); }  #screen-billing .lg-dot.running{ background:#e8890c; }  #screen-billing .lg-dot.sel{ background:var(--navy); }  #screen-billing .table-grid{ grid-template-columns:repeat(auto-fill, minmax(70px, 1fr)); }  #screen-billing .table-tile{ background:color-mix(in srgb, var(--success) 11%, var(--card)); border:2px solid color-mix(in srgb, var(--success) 45%, transparent); padding:10px 4px; }  #screen-billing .table-tile .t-amt{ color:var(--success); font-weight:600; }  #screen-billing .table-tile.occupied{ background:color-mix(in srgb, #e8890c 20%, var(--card)); border-color:#e8890c; }  #screen-billing .table-tile.occupied .t-amt{ color:#b45f00; font-weight:800; font-size:12px; }  [data-theme="dark"] #screen-billing .table-tile.occupied .t-amt{ color:#ffb55c; }  #screen-billing .table-tile.selected{ background:var(--navy); border-color:var(--gold); }  #screen-billing .table-tile.selected .t-no, #screen-billing .table-tile.selected .t-amt{ color:#fff; }
 
-  /* Category colours (--cc is set per element from the category's colour) */  #screen-billing .cat-chip{ --cc:#64708a; background:color-mix(in srgb, var(--cc) 14%, var(--card)); border:2px solid color-mix(in srgb, var(--cc) 45%, transparent); color:var(--text); padding:6px 14px; font-size:13px; }  #screen-billing .cat-chip:hover{ background:color-mix(in srgb, var(--cc) 26%, var(--card)); }  #screen-billing .cat-chip.active{ background:var(--cc); border-color:var(--cc); color:#fff; }  #screen-billing #posSearchResults{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; align-content:start; flex:1; max-height:none; min-height:0; overflow-y:auto; border:none; box-shadow:none; padding:2px; margin-top:6px; }  #screen-billing #posSearchResults[style*="display: none"]{ display:none; }  #screen-billing #posSearchResults .empty-state{ grid-column:1 / -1; }  #screen-billing .search-result-wrap{ --cc:#64708a; display:flex; flex-direction:column; border-radius:10px; border:1px solid color-mix(in srgb, var(--cc) 40%, transparent); border-top:5px solid var(--cc); background:color-mix(in srgb, var(--cc) 9%, var(--card)); overflow:hidden; }  #screen-billing .search-result-wrap:hover{ box-shadow:var(--shadow-md); }  #screen-billing .search-result-row{ flex-direction:column; gap:4px; border-bottom:none; padding:9px 10px; flex:1; }  #screen-billing .search-result-row:hover{ background:color-mix(in srgb, var(--cc) 16%, transparent); }  #screen-billing .search-result-row .it-name{ font-weight:700; font-size:13.5px; line-height:1.25; color:var(--heading); }  #screen-billing .search-result-row .it-meta{ font-size:11px; color:var(--muted); }  #screen-billing .search-result-row .it-price{ font-weight:800; font-size:15px; color:var(--cc); }  [data-theme="dark"] #screen-billing .search-result-row .it-price{ filter:brightness(1.5); }  #screen-billing .peg-btn-row{ background:transparent; border-bottom:none; padding:0 8px 8px; gap:4px; }  #screen-billing .peg-btn-row button{ background:color-mix(in srgb, var(--cc) 14%, var(--card)); color:var(--text); border:1px solid color-mix(in srgb, var(--cc) 50%, transparent); font-weight:600; }  #screen-billing .peg-btn-row button:hover{ background:var(--cc); color:#fff; border-color:var(--cc); }
+  /* Category colours (--cc is set per element from the category's colour) */  #screen-billing .cat-chip{ --cc:#64708a; background:color-mix(in srgb, var(--cc) 14%, var(--card)); border:2px solid color-mix(in srgb, var(--cc) 45%, transparent); color:var(--text); padding:6px 14px; font-size:13px; }  #screen-billing .cat-chip:hover{ background:color-mix(in srgb, var(--cc) 26%, var(--card)); }  #screen-billing .cat-chip.active{ background:var(--cc); border-color:var(--cc); color:#fff; }  #screen-billing #posSearchResults{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; align-content:start; flex:1; max-height:none; min-height:0; overflow-y:auto; border:none; box-shadow:none; padding:2px; margin-top:6px; }  #screen-billing #posSearchResults[style*="display: none"]{ display:none; }  #screen-billing #posSearchResults .empty-state{ grid-column:1 / -1; }  #screen-billing .search-result-wrap{ --cc:#64708a; display:flex; flex-direction:column; border-radius:10px; border:1px solid color-mix(in srgb, var(--cc) 40%, transparent); border-top:5px solid var(--cc); background:color-mix(in srgb, var(--cc) 9%, var(--card)); overflow:hidden; }  #screen-billing .search-result-wrap:hover{ box-shadow:var(--shadow-md); }  #screen-billing .search-result-row{ flex-direction:column; gap:4px; border-bottom:none; padding:9px 10px; flex:1; }  #screen-billing .search-result-row:hover{ background:color-mix(in srgb, var(--cc) 16%, transparent); }  #screen-billing .search-result-row .it-name{ font-weight:700; font-size:13.5px; line-height:1.25; color:var(--heading); }  #screen-billing .search-result-row .it-meta{ font-size:12px; color:var(--muted); }  #screen-billing .search-result-row .it-price{ font-weight:800; font-size:15px; color:var(--cc); }  [data-theme="dark"] #screen-billing .search-result-row .it-price{ filter:brightness(1.5); }  #screen-billing .peg-btn-row{ background:transparent; border-bottom:none; padding:0 8px 8px; gap:4px; }  #screen-billing .peg-btn-row button{ background:color-mix(in srgb, var(--cc) 14%, var(--card)); color:var(--text); border:1px solid color-mix(in srgb, var(--cc) 50%, transparent); font-weight:600; }  #screen-billing .peg-btn-row button:hover{ background:var(--cc); color:#fff; border-color:var(--cc); }
 
   /* Bill panel */  #screen-billing .bill-cust-row{ margin-bottom:6px; }  #screen-billing #posCartList{ flex:1 1 150px; min-height:110px; overflow-y:auto; margin-top:6px; border-top:1px solid var(--border); }  #screen-billing .cart-row{ --cc:var(--border); border-left:5px solid var(--cc); padding:8px 6px 8px 8px; border-radius:6px; margin-top:3px; }  #screen-billing .cart-row .name{ font-weight:600; cursor:pointer; }  #screen-billing .cart-row .qty-box button{ width:28px; height:28px; font-size:16px; font-weight:700; }  #screen-billing .cart-row .qty-box > span{ min-width:20px; text-align:center; font-weight:800; }  #screen-billing .totals-box .line.grand{ background:var(--success); color:#fff; border:none; border-radius:10px; padding:10px 14px; font-size:24px; font-weight:800; margin-top:8px; }  #screen-billing .pay-modes{ display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin:4px 0 6px; }  #screen-billing .pay-modes button{ --pc:#64708a; padding:10px 4px; border-radius:9px; font-weight:700; font-size:13px; cursor:pointer; background:color-mix(in srgb, var(--pc) 12%, var(--card)); color:var(--text); border:2px solid color-mix(in srgb, var(--pc) 45%, transparent); }  #screen-billing .pay-modes button.active{ background:var(--pc); color:#fff; border-color:var(--pc); }  #screen-billing .pm-cash{ --pc:#1f8a52; }  #screen-billing .pm-card{ --pc:#2563eb; }  #screen-billing .pm-upi{ --pc:#7c3aed; }  #screen-billing .pm-credit{ --pc:#e8890c; }  #screen-billing .bill-actions{ margin-top:12px; }  #screen-billing #btnSavePrintBill{ background:var(--success); color:#fff; font-size:16px; padding:14px 16px; }  #screen-billing #btnSavePrintBill:hover{ background:#17703f; }  #screen-billing #btnPrintKot{ background:#2563eb; color:#fff; border:none; }  #screen-billing #btnPrintKot:hover{ background:#1d4ed8; }
 
@@ -404,14 +404,14 @@
      name on its own row with the controls underneath, the cart list scrolls
      inside its own box, and item tiles never shrink below their content. */  #screen-billing .cart-row{ flex-wrap:wrap; row-gap:6px; }  #screen-billing .cart-row .name{ flex:1 1 100%; white-space:normal; word-break:break-word; line-height:1.3; }  #screen-billing .cart-row .qty-box{ flex:0 0 auto; }  #screen-billing .cart-row .cart-rate{ flex:0 0 80px; }  #screen-billing .cart-row .amt{ flex:1 1 auto; width:auto; }  #screen-billing #posCartList{ flex:1 1 220px; min-height:160px; overflow-y:auto; }  #screen-billing #posSearchResults{ grid-auto-rows:min-content; }  #screen-billing #posSearchResults > .search-result-wrap{ flex-shrink:0; min-height:74px; }  #screen-billing .search-result-row .it-name{ white-space:normal; word-break:break-word; }
   /* Compact item tiles so ~60 fit on one screen: name (2 lines max) on the
-     left, price on the right, size/code hidden to save height. */  #screen-billing #posSearchResults{ grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:4px; padding:1px; }  #screen-billing #posSearchResults > .search-result-wrap{ min-height:0; border-top-width:3px; border-radius:7px; }  #screen-billing .search-result-row{ flex-direction:row; align-items:center; justify-content:space-between; gap:4px; padding:3px 6px; min-height:34px; }  #screen-billing .search-result-row .it-name{ flex:1; font-size:11.5px; line-height:1.15; white-space:normal; word-break:break-word; overflow:visible; }  #screen-billing .search-result-row .it-meta{ display:none; }  #screen-billing .search-result-row .it-price{ font-size:12px; flex:0 0 auto; }  #screen-billing .peg-btn-row{ padding:0 4px 3px; gap:3px; }  #screen-billing .peg-btn-row button{ font-size:10px; padding:1px 5px; }  #screen-billing .cat-chip{ padding:4px 10px; font-size:12px; }
+     left, price on the right, size/code hidden to save height. */  #screen-billing #posSearchResults{ grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:4px; padding:1px; }  #screen-billing #posSearchResults > .search-result-wrap{ min-height:0; border-top-width:3px; border-radius:7px; }  #screen-billing .search-result-row{ flex-direction:row; align-items:center; justify-content:space-between; gap:4px; padding:3px 6px; min-height:34px; }  #screen-billing .search-result-row .it-name{ flex:1; font-size:11.5px; line-height:1.15; white-space:normal; word-break:break-word; overflow:visible; }  #screen-billing .search-result-row .it-meta{ display:none; }  #screen-billing .search-result-row .it-price{ font-size:12px; flex:0 0 auto; }  #screen-billing .peg-btn-row{ padding:0 4px 3px; gap:3px; }  #screen-billing .peg-btn-row button{ font-size:12px; padding:1px 5px; }  #screen-billing .cat-chip{ padding:4px 10px; font-size:12px; }
   /* Compact table tiles: ~30 tables visible at once without scrolling */
   #screen-billing .pos-tables{ flex-basis:310px; }
   #screen-billing .table-grid{ grid-template-columns:repeat(5, 1fr); gap:5px; }
   #screen-billing .table-tile{ padding:4px 2px; border-width:1.5px; border-radius:7px; }
   #screen-billing .table-tile .t-no{ font-size:13px; line-height:1.2; }
   #screen-billing .table-tile .t-amt{ font-size:9.5px; margin-top:0; }
-  #screen-billing .table-tile.occupied .t-amt{ font-size:10px; }
+  #screen-billing .table-tile.occupied .t-amt{ font-size:12px; }
   #screen-billing .zone-block{ margin-bottom:8px; }
   #screen-billing .zone-title{ margin-bottom:4px; }
   /* Compact bill panel: every cart line on one row so as many items as
@@ -444,7 +444,7 @@
   .kbd-choose-list{ overflow-y:auto; border:1px solid var(--border); border-radius:8px; }
   .kbd-choose-item{ display:flex; align-items:center; gap:10px; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--border); font-size:14px; }
   .kbd-choose-item:last-child{ border-bottom:none; }
-  .kbd-choose-item .kc-num{ width:20px; height:20px; border-radius:5px; background:var(--chip-bg); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .kbd-choose-item .kc-num{ width:20px; height:20px; border-radius:5px; background:var(--chip-bg); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
   .kbd-choose-item .kc-label{ flex:1; font-weight:600; }
   .kbd-choose-item .kc-hint{ color:var(--muted); font-size:12.5px; white-space:nowrap; }
   .kbd-choose-item.active{ background:var(--navy); color:#fff; }
@@ -464,12 +464,12 @@
   table.food-edit input.fe-saved{ border-color:var(--success); box-shadow:0 0 0 2px rgba(31,138,82,0.25); }
   .ledger-summary{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:6px 0 10px; }
   .ledger-summary .ls-total{ font-weight:800; font-size:15px; margin-right:6px; }
-  .age-chip{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; background:var(--chip-bg); }
+  .age-chip{ font-size:12px; font-weight:700; padding:2px 8px; border-radius:10px; background:var(--chip-bg); }
   .age-chip.a1{ background:color-mix(in srgb, var(--success) 18%, var(--card)); }
   .age-chip.a2{ background:color-mix(in srgb, #e8c20c 25%, var(--card)); }
   .age-chip.a3{ background:color-mix(in srgb, #e8890c 28%, var(--card)); }
   .age-chip.a4{ background:color-mix(in srgb, var(--danger) 28%, var(--card)); }
-  .ledger-sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .ledger-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
   .ledger-sub.over{ color:var(--danger); font-weight:700; }
   @media (max-width:1280px){
   #screen-billing .pos-tables{ flex-basis:270px; }  #screen-billing .pos-order{ flex-basis:370px; }
@@ -591,7 +591,7 @@
     width:100%;
     max-width:100%;
     border-collapse:collapse;
-    font-size:9px;
+    font-size:12px;
     background:#fff;
   }
   .flr-table th, .flr-table td{
@@ -601,7 +601,7 @@
     text-overflow:ellipsis;
   }
   .flr-table th{
-    font-size:9px;
+    font-size:12px;
     text-align:center;
     background:#f3f4f6;
     font-weight:600;
@@ -615,13 +615,13 @@
     font-weight:700;
     text-align:left;
   }
-  .flr-form-sub{ font-size:11px; font-weight:600; text-align:center; margin:0 0 8px; }
+  .flr-form-sub{ font-size:12px; font-weight:600; text-align:center; margin:0 0 8px; }
   table.flr4a-table{
     table-layout:auto;
     width:auto;
     margin:0 auto;
     border-collapse:collapse;
-    font-size:11px;
+    font-size:12px;
     background:#fff;
   }
   .flr4a-table th, .flr4a-table td{
@@ -629,7 +629,7 @@
     padding:5px 10px;
     text-align:center;
   }
-  .flr4a-table th{ background:#f3f4f6; font-weight:700; font-size:10px; }
+  .flr4a-table th{ background:#f3f4f6; font-weight:700; font-size:12px; }
   .flr4a-table td.flr4a-row-label{ text-align:left; font-weight:700; white-space:nowrap; }
   /* Starting Cash / Change Fund field -- plain number entry, no up/down spinner clutter */
   #rptStartingCash::-webkit-outer-spin-button,
@@ -640,6 +640,37 @@
   #rptStartingCash{
     -moz-appearance:textfield;
   }
+
+  /* ===== UX polish (v0.1.8) ===== */
+  :root{ --muted:#5a6176; }
+  [data-theme="dark"]{ --muted:#9aa2bb; }
+  :focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  td, .stat-value, .totals-box .line, .cart-row .price{ font-variant-numeric:tabular-nums; }
+  #screen-billing .cart-row .qty-box button{ width:36px; height:36px; font-size:18px; }
+  .nav-group{ font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.45); padding:12px 16px 4px; }
+  .sidebar.collapsed .nav-group{ display:none; }
+  .save-state{ font-size:12px; color:var(--muted); margin-right:10px; white-space:nowrap; }
+  .save-state.err{ color:var(--danger); font-weight:700; }
+  .attn{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .attn-chip{ display:flex; align-items:center; gap:8px; padding:9px 14px; border-radius:10px; background:var(--card); border:1px solid var(--border); border-left:5px solid var(--gold); cursor:pointer; font-size:13px; font-weight:600; box-shadow:var(--shadow-sm); }
+  .attn-chip:hover{ background:var(--surface-hover); }
+  .attn-chip.red{ border-left-color:var(--danger); }
+  .attn-chip.ok{ border-left-color:var(--success); cursor:default; }
+  .attn-chip b{ font-size:16px; }
+  .setup-guide{ margin-bottom:14px; }
+  .setup-guide .step{ display:flex; align-items:center; gap:10px; padding:8px 4px; cursor:pointer; border-bottom:1px solid var(--border); }
+  .setup-guide .step:last-child{ border-bottom:none; }
+  .setup-guide .dot{ width:22px; height:22px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; }
+  .setup-guide .step.done .dot{ background:var(--success); border-color:var(--success); color:#fff; }
+  .setup-guide .step.done span{ text-decoration:line-through; color:var(--muted); }
+  .setup-guide .bar{ height:6px; background:var(--chip-bg); border-radius:6px; margin:8px 0 6px; overflow:hidden; }
+  .setup-guide .bar i{ display:block; height:100%; background:var(--success); }
+  .keys-overlay{ position:fixed; inset:0; background:rgba(8,12,24,.6); z-index:9999; display:flex; align-items:center; justify-content:center; }
+  .keys-box{ background:var(--card); color:var(--text); border-radius:16px; padding:22px 26px; width:560px; max-width:94vw; max-height:88vh; overflow:auto; box-shadow:var(--shadow-lg); }
+  .keys-box h2{ margin:0 0 12px; }
+  .keys-box table{ width:100%; border-collapse:collapse; }
+  .keys-box td{ padding:6px 4px; border-bottom:1px solid var(--border); font-size:14px; }
+  .keys-box td:first-child{ white-space:nowrap; font-weight:700; width:150px; }
 </style>
 </head>
 <body>
@@ -675,7 +706,7 @@
     <button class="btn gold" id="btnStaffLogin">Log In</button>
     <div style="text-align:center; margin-top:14px;"><a href="#" id="linkForgotPin" style="font-size:13px; color:var(--muted,#777);">Forgot PIN?</a></div>
   </div>
-  <div style="text-align:center; margin-top:16px; font-size:11px; letter-spacing:0.2px; color:#8a92a8;">Product of Manokshmi Technologies</div>
+  <div style="text-align:center; margin-top:16px; font-size:12px; letter-spacing:0.2px; color:#8a92a8;">Product of Manokshmi Technologies</div>
 </div>
 
 <div id="recoveryEnterOverlay" class="modal-overlay">
@@ -722,6 +753,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
         <span class="label" data-i18n="dashboard">Dashboard</span>
       </div>
+      <div class="nav-group" data-no-mr="1">Sell</div>
       <div class="nav-item" data-screen="billing">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle><path d="M3 4h2l2.6 11.6a2 2 0 0 0 2 1.4h7.7a2 2 0 0 0 2-1.6L21 8H6"></path></svg>
         <span class="label" data-i18n="billing">Billing</span>
@@ -730,6 +762,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
         <span class="label" data-i18n="history">Bill History</span>
       </div>
+      <div class="nav-group" data-no-mr="1">Stock</div>
       <div class="nav-item" data-screen="stock">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"></path><path d="M3 8v8l9 5 9-5V8"></path><path d="M12 13v8"></path></svg>
         <span class="label" data-i18n="stock">Stock</span>
@@ -742,6 +775,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
         <span class="label" data-i18n="purchaseorders">Purchase Orders</span>
       </div>
+      <div class="nav-group" data-no-mr="1">Money</div>
       <div class="nav-item" data-screen="expenses">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10"></path><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1.1-3 2.5 1.3 2.5 3 2.5 3 1.1 3 2.5-1.3 2.5-3 2.5-3-1.1-3-2.5"></path></svg>
         <span class="label" data-i18n="expenses">Expenses</span>
@@ -754,6 +788,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <span class="label" data-i18n="ledger">Ledger</span>
       </div>
+      <div class="nav-group" data-no-mr="1">Admin</div>
       <div class="nav-item" data-screen="setup">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
         <span class="label" data-i18n="setup">Setup</span>
@@ -768,6 +803,10 @@
       <span class="vendor-watermark-header">Manokshmi BarBill &middot; Product of Manokshmi Technologies</span>
       <div class="topbar-right">
         <div class="topbar-toggles">
+          <span class="save-state" id="saveState" data-no-mr="1" title="Data save status">Saved</span>
+          <button class="icon-toggle" id="btnTextSmaller" type="button" title="Smaller text" aria-label="Smaller text">A-</button>
+          <button class="icon-toggle" id="btnTextBigger" type="button" title="Bigger text" aria-label="Bigger text">A+</button>
+          <button class="icon-toggle" id="btnKeysHelp" type="button" title="Keyboard shortcuts (F1)" aria-label="Keyboard shortcuts">?</button>
           <button class="icon-toggle" id="btnToggleLang" type="button" title="Switch language">EN</button>
           <button class="icon-toggle" id="btnToggleTheme" type="button" title="Switch theme">
             <svg id="themeIconDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -789,6 +828,8 @@
 
       <!-- ================= DASHBOARD ================= -->
       <section id="screen-dashboard" class="screen active">
+        <div id="dashGuide"></div>
+        <div class="attn" id="dashAttention"></div>
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg></div>
@@ -891,7 +932,7 @@
                 </div>
                 <div class="search-results" id="posSearchResults" style="display:none;"></div>
               </div>
-              <div class="kbd-hint"><b>Keyboard:</b> <b>F3</b> table &middot; <b>F2</b> search (type <b>2*rum</b> for qty; <b>Enter</b> asks which item / pour) &middot; <b>F4</b> bill lines (&uarr;&darr; select, <b>+/-</b> qty, <b>Del</b> remove, <b>R</b> rate) &middot; <b>Alt+D</b> discount &middot; <b>Alt+1-4</b> Cash/Card/UPI/Credit &middot; <b>Alt+S</b> split &middot; <b>Ctrl+K</b> KOT &middot; <b>Ctrl+Enter</b> save &amp; print &middot; <b>Alt+X</b> clear &middot; <b>Alt+M</b> move &middot; <b>Alt+G</b> merge &middot; <b>Esc</b> back</div>
+              <div class="kbd-hint"><b>Keys:</b> <b>F2</b> search &middot; <b>F3</b> table &middot; <b>F4</b> bill lines &middot; <b>Alt+1-4</b> payment &middot; <b>Ctrl+Enter</b> save &amp; print &middot; <b>F1</b> all shortcuts</div>
             </div>
           </div>
 
@@ -2457,9 +2498,12 @@
   function saveData(keys){
     var useKeys = (keys && keys.length) ? keys : DATA_KEYS;
     var pairs = useKeys.map(function(k){ return {key: k, value: data[k]}; });
+    markSaveState("saving");
     idbPutAll(pairs).then(function(){
+      markSaveState("saved");
       renderStorageWarningBanner(false);
     }).catch(function(e){
+      markSaveState("error");
       console.error("saveData failed:", e);
       showToast("Storage error -- this change may not be saved! Go to Setup > Data & Performance.");
       renderStorageWarningBanner(true);
@@ -2899,7 +2943,124 @@
       html += '</tbody></table>';
       box.innerHTML = html;
     }
+    try{ renderAttention(); }catch(e){ console.error(e); }
   }
+
+  /* ---- UX layer: save state, attention strip, setup guide, text size, shortcuts ---- */
+  function markSaveState(st){
+    var el = document.getElementById("saveState"); if(!el) return;
+    if(st === "error"){ el.className = "save-state err"; el.textContent = "NOT SAVED!"; return; }
+    if(st === "saving"){ el.className = "save-state"; el.textContent = "Saving…"; return; }
+    var d = new Date();
+    el.className = "save-state";
+    el.textContent = "Saved " + ("0"+d.getHours()).slice(-2) + ":" + ("0"+d.getMinutes()).slice(-2);
+  }
+
+  function renderAttention(){
+    var box = document.getElementById("dashAttention"); if(!box) return;
+    var chips = [];
+    function chip(n, text, cls, go, setupTab){
+      chips.push('<div class="attn-chip ' + cls + '" data-go="' + go + '"' + (setupTab ? ' data-tab="' + setupTab + '"' : '') + '><b>' + n + '</b><span>' + text + '</span></div>');
+    }
+    var running = (data.openOrders || []).filter(function(o){ return o && o.lines && o.lines.length; }).length;
+    if(running) chip(running, "table" + (running > 1 ? "s" : "") + " with running bill", "", "billing");
+    var low = data.items.filter(isLowStock).length;
+    if(low) chip(low, "item" + (low > 1 ? "s" : "") + " low / out of stock", "red", "stock");
+    var pos = (data.purchaseOrders || []).filter(function(p){ return p.status === "Pending" || p.status === "Partial"; }).length;
+    if(pos) chip(pos, "purchase order" + (pos > 1 ? "s" : "") + " awaiting delivery", "", "purchaseorders");
+    var rec = data.customers.reduce(function(a, c){ return a + (c.balance || 0); }, 0);
+    if(rec > 0) chip(fmt(rec), "to collect from credit customers", "", "setup", "customers");
+    var pay = data.vendors.reduce(function(a, v){ return a + (v.balance || 0); }, 0);
+    if(pay > 0) chip(fmt(pay), "to pay vendors", "", "setup", "vendors");
+    if(!chips.length) chip("✓", "All clear – nothing needs attention", "ok", "");
+    box.innerHTML = chips.join("");
+    Array.prototype.forEach.call(box.querySelectorAll(".attn-chip[data-go]"), function(c){
+      var g = c.getAttribute("data-go"); if(!g) return;
+      c.addEventListener("click", function(){
+        switchScreen(g);
+        var t = c.getAttribute("data-tab");
+        if(t){ var b = document.querySelector('[data-setup-tab="' + t + '"]'); if(b) b.click(); }
+      });
+    });
+    renderSetupGuide();
+  }
+
+  function renderSetupGuide(){
+    var box = document.getElementById("dashGuide"); if(!box) return;
+    var steps = [
+      {t:"Enter your business name", done: !!(data.business.name && data.business.name !== "Hotel Pro"), go:"setup", tab:"business"},
+      {t:"Add menu items", done: data.items.length > 0, go:"setup", tab:"items"},
+      {t:"Enter opening stock", done: (data.openingStockEntries || []).length > 0 || (data.stockLog || []).length > 0, go:"stock"},
+      {t:"Add a vendor", done: data.vendors.length > 0, go:"setup", tab:"vendors"},
+      {t:"Make your first bill", done: data.bills.length > 0, go:"billing"}
+    ];
+    var n = steps.filter(function(x){ return x.done; }).length;
+    if(n === steps.length || data.bills.length > 20){ box.innerHTML = ""; return; }
+    var h = '<div class="card setup-guide"><h2>Get started <span class="muted" style="font-size:13px;font-weight:600;">' + n + ' of ' + steps.length + ' done</span></h2><div class="bar"><i style="width:' + Math.round(n / steps.length * 100) + '%"></i></div>';
+    steps.forEach(function(x, i){
+      h += '<div class="step' + (x.done ? ' done' : '') + '" data-go="' + x.go + '"' + (x.tab ? ' data-tab="' + x.tab + '"' : '') + '><div class="dot">' + (x.done ? '✓' : (i + 1)) + '</div><span>' + x.t + '</span></div>';
+    });
+    box.innerHTML = h + '</div>';
+    Array.prototype.forEach.call(box.querySelectorAll(".step"), function(c){
+      c.addEventListener("click", function(){
+        switchScreen(c.getAttribute("data-go"));
+        var t = c.getAttribute("data-tab");
+        if(t){ var b = document.querySelector('[data-setup-tab="' + t + '"]'); if(b) b.click(); }
+      });
+    });
+  }
+
+  var TEXT_ZOOMS = [0.9, 1, 1.1, 1.2, 1.3];
+  function applyTextZoom(i){
+    i = Math.max(0, Math.min(TEXT_ZOOMS.length - 1, i));
+    try{ localStorage.setItem("bb_text_zoom", String(i)); }catch(e){}
+    document.body.style.zoom = TEXT_ZOOMS[i];
+    return i;
+  }
+  var textZoomIdx = 1;
+  try{ var zi = parseInt(localStorage.getItem("bb_text_zoom"), 10); if(!isNaN(zi)) textZoomIdx = zi; }catch(e){}
+  textZoomIdx = applyTextZoom(textZoomIdx);
+  document.getElementById("btnTextSmaller").addEventListener("click", function(){ textZoomIdx = applyTextZoom(textZoomIdx - 1); });
+  document.getElementById("btnTextBigger").addEventListener("click", function(){ textZoomIdx = applyTextZoom(textZoomIdx + 1); });
+
+  function toggleKeysHelp(){
+    var ex = document.getElementById("keysOverlay");
+    if(ex){ ex.parentNode.removeChild(ex); return; }
+    var rows = [["F1 / ?","This help"],["F2","Search item / scan barcode (2*rum = qty 2)"],["F3","Pick table"],["F4","Select bill lines (↑↓, + / -, Del, R rate)"],
+      ["Alt+1 / 2 / 3 / 4","Cash / Card / UPI / Credit"],["Alt+S","Split payment"],["Alt+D","Discount"],["Alt+N","Customer name"],["Alt+M / Alt+G","Move / merge table"],
+      ["Ctrl+K","Print KOT"],["Ctrl+Enter","Save & print bill"],["Alt+X","Clear bill"],["Enter","Next field / save in forms"],["Esc","Close / go back"]];
+    var h = '<div class="keys-overlay" id="keysOverlay"><div class="keys-box" data-no-mr="1"><h2>Keyboard shortcuts</h2><table>';
+    rows.forEach(function(r){ h += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>'; });
+    h += '</table><div style="text-align:right;margin-top:14px;"><button class="btn" id="btnKeysClose">Close (Esc)</button></div></div></div>';
+    document.body.insertAdjacentHTML("beforeend", h);
+    var ov = document.getElementById("keysOverlay");
+    ov.addEventListener("click", function(ev){ if(ev.target === ov) toggleKeysHelp(); });
+    document.getElementById("btnKeysClose").addEventListener("click", toggleKeysHelp);
+  }
+  document.getElementById("btnKeysHelp").addEventListener("click", toggleKeysHelp);
+  document.addEventListener("keydown", function(e){
+    if(e.key === "F1"){ e.preventDefault(); toggleKeysHelp(); return; }
+    if(e.key === "Escape" && document.getElementById("keysOverlay")){ e.preventDefault(); toggleKeysHelp(); }
+  });
+
+  /* Give icon-only buttons / nav items an accessible name from their title or label */
+  function labelIconControls(){
+    Array.prototype.forEach.call(document.querySelectorAll("button, .nav-item, .tile"), function(el){
+      if(el.getAttribute("aria-label")) return;
+      var txt = (el.textContent || "").replace(/\s+/g, " ").trim();
+      var name = txt || el.getAttribute("title");
+      if(name) el.setAttribute("aria-label", name);
+      if((el.classList.contains("nav-item") || el.classList.contains("tile")) && !el.getAttribute("tabindex")){
+        el.setAttribute("tabindex", "0"); el.setAttribute("role", "button");
+      }
+    });
+  }
+  labelIconControls();
+  document.addEventListener("keydown", function(e){
+    if((e.key === "Enter" || e.key === " ") && e.target && e.target.classList && (e.target.classList.contains("nav-item") || e.target.classList.contains("tile"))){
+      e.preventDefault(); e.target.click();
+    }
+  });
 
   /* ================= BILLING / POS ================= */
   var currentTableId = null;
@@ -3996,7 +4157,7 @@
       var img = qr.createImgTag(4, 4);
       return '<hr><div class="r-center">' + img +
         '<div style="font-size:12px; font-weight:900; margin-top:2px;">Scan to Pay ' + escapeHtml(fmt(bill.total)) + '</div>' +
-        '<div style="font-size:10px;">UPI: ' + escapeHtml(upiId) + '</div></div>';
+        '<div style="font-size:12px;">UPI: ' + escapeHtml(upiId) + '</div></div>';
     }catch(e){
       console.error("UPI QR generation failed:", e);
       return "";
@@ -4011,7 +4172,7 @@
     // first, then the total -- everything else (meta lines, line items,
     // sub-totals) sits a size or two smaller instead of one flat size.
     var html = '<div class="r-center" style="font-weight:900; font-size:20px; letter-spacing:0.3px;">' + escapeHtml(b.name) + '</div>';
-    if(b.address) html += '<div class="r-center" style="font-size:11px;">' + escapeHtml(b.address) + '</div>';
+    if(b.address) html += '<div class="r-center" style="font-size:12px;">' + escapeHtml(b.address) + '</div>';
     html += '<hr>';
     html += '<div style="font-size:12px;">Bill No: ' + escapeHtml(bill.billNo) + '</div>';
     html += '<div style="font-size:12px;">' + new Date(bill.date).toLocaleString() + '</div>';
@@ -4034,10 +4195,10 @@
     if(bill.editLog && bill.editLog.length){
       html += '<hr><div style="font-weight:700; font-size:12px;">Edit History</div>';
       bill.editLog.forEach(function(e){
-        html += '<div style="font-size:11px; margin-top:4px;">' + new Date(e.date).toLocaleString() + ' -- ' + escapeHtml(e.summary) + '</div>';
+        html += '<div style="font-size:12px; margin-top:4px;">' + new Date(e.date).toLocaleString() + ' -- ' + escapeHtml(e.summary) + '</div>';
       });
     }
-    if(b.billFooterText) html += '<hr><div class="r-center" style="font-size:11px;">' + escapeHtml(b.billFooterText) + '</div>';
+    if(b.billFooterText) html += '<hr><div class="r-center" style="font-size:12px;">' + escapeHtml(b.billFooterText) + '</div>';
     document.getElementById("receiptContent").innerHTML = html;
     document.getElementById("receipt").style.display = "block";
     document.getElementById("receipt").scrollIntoView({behavior: "smooth"});
@@ -4181,15 +4342,15 @@
           var editCount = (b.editLog && b.editLog.length) || 0;
           var statusTag = "";
           if(b.deleted){
-            statusTag = ' <span class="muted" style="font-size:11px; color:var(--danger);">(DELETED' + (editCount ? ", edited x" + editCount : "") + ')</span>';
+            statusTag = ' <span class="muted" style="font-size:12px; color:var(--danger);">(DELETED' + (editCount ? ", edited x" + editCount : "") + ')</span>';
           } else if(editCount){
-            statusTag = ' <span class="muted" style="font-size:11px;">(edited x' + editCount + ')</span>';
+            statusTag = ' <span class="muted" style="font-size:12px;">(edited x' + editCount + ')</span>';
           }
           var rowStyle = b.deleted ? ' style="opacity:0.55; text-decoration:line-through;"' : '';
           var actions = '<button class="btn small secondary" data-view="' + b.id + '">View</button> '
             + (b.deleted ? '<button class="btn small secondary" data-viewlog="' + b.id + '">History</button>'
               : '<button class="btn small secondary" data-edit="' + b.id + '">Edit</button> <button class="btn small danger" data-del="' + b.id + '">Delete</button>');
-          html += '<tr' + rowStyle + '><td>' + escapeHtml(b.billNo) + statusTag + (b.staff ? '<div class="muted" style="font-size:11px;">by ' + escapeHtml(b.staff) + (b.deleted && b.deletedBy ? ' · deleted by ' + escapeHtml(b.deletedBy) : '') + '</div>' : '') + '</td><td>' + escapeHtml(b.tableLabel || "-") + '</td><td>' + new Date(b.date).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + '</td><td style="text-align:right;">' + fmt(b.total) + '</td><td>' + escapeHtml(b.paymentMode) + '</td><td>' + actions + '</td></tr>';
+          html += '<tr' + rowStyle + '><td>' + escapeHtml(b.billNo) + statusTag + (b.staff ? '<div class="muted" style="font-size:12px;">by ' + escapeHtml(b.staff) + (b.deleted && b.deletedBy ? ' · deleted by ' + escapeHtml(b.deletedBy) : '') + '</div>' : '') + '</td><td>' + escapeHtml(b.tableLabel || "-") + '</td><td>' + new Date(b.date).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + '</td><td style="text-align:right;">' + fmt(b.total) + '</td><td>' + escapeHtml(b.paymentMode) + '</td><td>' + actions + '</td></tr>';
         });
         html += '</tbody></table>';
       }
@@ -4581,7 +4742,7 @@
             return;
           }
           var out = isOutOfStock(i);
-          html += '<tr><td>' + escapeHtml(i.name) + (i.brand ? '<div class="muted" style="font-size:11px;">' + escapeHtml(i.brand) + (i.bottleSize ? " -- " + escapeHtml(i.bottleSize) : "") + '</div>' : '') + (out ? ' <span style="color:var(--danger); font-size:11px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + (i.stockCounter || 0) + '</td><td style="text-align:right;">' + (i.stockGodown || 0) + '</td><td style="text-align:right;">' + itemTotalStock(i) + '</td><td><button class="btn small secondary" data-transfer="' + i.id + '">Transfer</button></td></tr>';
+          html += '<tr><td>' + escapeHtml(i.name) + (i.brand ? '<div class="muted" style="font-size:12px;">' + escapeHtml(i.brand) + (i.bottleSize ? " -- " + escapeHtml(i.bottleSize) : "") + '</div>' : '') + (out ? ' <span style="color:var(--danger); font-size:12px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + (i.stockCounter || 0) + '</td><td style="text-align:right;">' + (i.stockGodown || 0) + '</td><td style="text-align:right;">' + itemTotalStock(i) + '</td><td><button class="btn small secondary" data-transfer="' + i.id + '">Transfer</button></td></tr>';
         });
         html += '</tbody></table>';
       } else {
@@ -4592,7 +4753,7 @@
             return;
           }
           var out = isOutOfStock(i);
-          html += '<tr><td>' + escapeHtml(i.name) + (out ? ' <span style="color:var(--danger); font-size:11px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + itemTotalStock(i) + '</td></tr>';
+          html += '<tr><td>' + escapeHtml(i.name) + (out ? ' <span style="color:var(--danger); font-size:12px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + itemTotalStock(i) + '</td></tr>';
         });
         html += '</tbody></table>';
       }
@@ -4633,7 +4794,7 @@
       var threshold = i.lowStockThreshold || 0;
       var suggested = Math.max(1, threshold * 2 - current);
       html += '<tr><td><input type="checkbox" class="reorder-check" data-reorderitem="' + i.id + '" checked></td>'
-        + '<td>' + escapeHtml(i.name) + (i.brand ? '<div class="muted" style="font-size:11px;">' + escapeHtml(i.brand) + '</div>' : '') + '</td>'
+        + '<td>' + escapeHtml(i.name) + (i.brand ? '<div class="muted" style="font-size:12px;">' + escapeHtml(i.brand) + '</div>' : '') + '</td>'
         + '<td style="text-align:right; color:var(--danger); font-weight:600;">' + current + '</td>'
         + '<td style="text-align:right;">' + threshold + '</td>'
         + '<td style="text-align:right;"><input type="number" class="reorder-qty" data-reorderqty="' + i.id + '" value="' + suggested + '" min="1" style="width:70px; text-align:right;"></td></tr>';
@@ -5373,17 +5534,17 @@
         groupPurchases.forEach(function(p){
           var itemsSummary = (p.items || []).map(function(it){ return escapeHtml(it.name) + ' x' + it.qty; }).join(', ');
           var editCount = (p.editLog || []).length;
-          var statusTag = p.deleted ? ' <span class="muted" style="font-size:11px; color:var(--danger);">(DELETED' + (editCount ? ", " + editCount + " log entr" + (editCount === 1 ? "y" : "ies") : "") + ')</span>' : "";
+          var statusTag = p.deleted ? ' <span class="muted" style="font-size:12px; color:var(--danger);">(DELETED' + (editCount ? ", " + editCount + " log entr" + (editCount === 1 ? "y" : "ies") : "") + ')</span>' : "";
           var rowStyle = p.deleted ? ' style="opacity:0.55; text-decoration:line-through;"' : '';
           var actionCell = p.deleted
             ? '<button class="btn small secondary" data-viewpurlog="' + p.id + '">History</button>'
             : (purchaseLockReason(p)
               ? '<button class="btn small secondary" data-lockedpur="' + p.id + '" title="' + escapeHtml(purchaseLockReason(p)) + '">🔒 Locked</button>'
               : '<button class="btn small danger" data-delpur="' + p.id + '">Delete</button>');
-          html += '<tr' + rowStyle + '><td>' + escapeHtml(p.purchaseNo) + statusTag + '<div class="muted" style="font-size:11px;">' + new Date(p.date).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + (p.permitNo ? ' -- TP: ' + escapeHtml(p.permitNo) : '') + '</div>'
-            + '<div class="muted" style="font-size:11px;">' + itemsSummary + '</div></td>'
-            + '<td>' + escapeHtml(p.vendorName) + (p.poNo ? '<div class="muted" style="font-size:11px;">PO: ' + escapeHtml(p.poNo) + '</div>' : '') + '</td>'
-            + '<td>' + (p.invoiceNo ? escapeHtml(p.invoiceNo) : '<span class="muted">--</span>') + (p.invoiceDate ? '<div class="muted" style="font-size:11px;">' + escapeHtml(p.invoiceDate) + '</div>' : '') + '</td>'
+          html += '<tr' + rowStyle + '><td>' + escapeHtml(p.purchaseNo) + statusTag + '<div class="muted" style="font-size:12px;">' + new Date(p.date).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + (p.permitNo ? ' -- TP: ' + escapeHtml(p.permitNo) : '') + '</div>'
+            + '<div class="muted" style="font-size:12px;">' + itemsSummary + '</div></td>'
+            + '<td>' + escapeHtml(p.vendorName) + (p.poNo ? '<div class="muted" style="font-size:12px;">PO: ' + escapeHtml(p.poNo) + '</div>' : '') + '</td>'
+            + '<td>' + (p.invoiceNo ? escapeHtml(p.invoiceNo) : '<span class="muted">--</span>') + (p.invoiceDate ? '<div class="muted" style="font-size:12px;">' + escapeHtml(p.invoiceDate) + '</div>' : '') + '</td>'
             + '<td>' + escapeHtml(p.paymentMode || "--") + '</td>'
             + '<td style="text-align:right;">' + fmt(p.total) + '</td>'
             + '<td>' + actionCell + '</td></tr>';
@@ -5634,7 +5795,7 @@
         var canReceive = po.status === "Pending" || po.status === "Partial";
         var hasReceipts = po.items.some(function(i){ return i.receivedQty > 0; });
         var canCancelOrDelete = po.status === "Pending" && !hasReceipts;
-        html += '<tr><td>' + escapeHtml(po.poNo) + '<div class="muted" style="font-size:11px;">' + new Date(po.date).toLocaleDateString() + '</div></td>' +
+        html += '<tr><td>' + escapeHtml(po.poNo) + '<div class="muted" style="font-size:12px;">' + new Date(po.date).toLocaleDateString() + '</div></td>' +
           '<td>' + escapeHtml(po.vendorName) + '</td>' +
           '<td>' + (po.expectedDate ? new Date(po.expectedDate).toLocaleDateString() : "-") + '</td>' +
           '<td style="max-width:260px; font-size:12px;">' + itemsSummary + '</td>' +
@@ -6033,11 +6194,11 @@
       '*{box-sizing:border-box;} body{margin:0; font-family:Arial,Helvetica,sans-serif;} ' +
       '.barcode-label{ width:47mm; height:27mm; text-align:center; padding:1mm; overflow:hidden; page-break-after:always; }' +
       '.barcode-label:last-child{ page-break-after:auto; }' +
-      '.barcode-label .bl-name{ font-weight:700; font-size:9px; line-height:1.15; max-height:22px; overflow:hidden; }' +
-      '.barcode-label .bl-size{ font-size:7px; color:#555; }' +
+      '.barcode-label .bl-name{ font-weight:700; font-size:12px; line-height:1.15; max-height:22px; overflow:hidden; }' +
+      '.barcode-label .bl-size{ font-size:12px; color:#555; }' +
       '.barcode-label svg{ max-width:100%; height:16mm; margin:1mm 0; }' +
-      '.barcode-label .bl-code{ font-family:monospace; font-size:8px; letter-spacing:1px; }' +
-      '.barcode-label .bl-mrp{ font-size:8px; margin-top:1mm; }' +
+      '.barcode-label .bl-code{ font-family:monospace; font-size:12px; letter-spacing:1px; }' +
+      '.barcode-label .bl-mrp{ font-size:12px; margin-top:1mm; }' +
       '</style></head><body>' + labelsHtml + '</body></html>');
     doc.close();
     win.focus();
@@ -6167,22 +6328,22 @@
       '*{box-sizing:border-box;} ' +
       'body{font-family:Arial,Helvetica,sans-serif; color:#111; margin:0; padding:0; font-size:9.5px; line-height:1.3;} ' +
       'h1{font-size:13px; margin:0 0 1px;} ' +
-      '.sub{color:#555; font-size:9px; margin-bottom:6px;} ' +
-      'table{width:100%; border-collapse:collapse; font-size:9px;} ' +
+      '.sub{color:#555; font-size:12px; margin-bottom:6px;} ' +
+      'table{width:100%; border-collapse:collapse; font-size:12px;} ' +
       'th,td{border:0.5px solid #888; padding:2px 4px; text-align:left; white-space:nowrap;} ' +
       'th{background:#eee; font-size:8.5px; text-transform:uppercase; letter-spacing:0.2px;} ' +
       'tfoot td{font-weight:700; background:#f5f5f5;} ' +
       'thead{display:table-header-group;} tfoot{display:table-footer-group;} tr{page-break-inside:avoid;} ' +
       '.flr-form-title{font-size:13px; font-weight:700; text-align:center; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px; padding-bottom:4px; border-bottom:1.5px solid #111;} ' +
       '.flr-table{table-layout:fixed; width:277mm;} ' +
-      '.flr-table th,.flr-table td{padding:1px 2px; font-size:7px; line-height:1.15; white-space:normal; overflow:hidden; text-align:center; word-break:break-word;} ' +
+      '.flr-table th,.flr-table td{padding:1px 2px; font-size:12px; line-height:1.15; white-space:normal; overflow:hidden; text-align:center; word-break:break-word;} ' +
       '.flr-table th{font-size:6.5px;} ' +
       '.flr-table td.flr-brand-cell{text-align:left; font-size:7.2px;} ' +
       '.flr-table td.flr-cat-cell{font-weight:700; text-align:left;} ' +
-      '.flr-form-sub{font-size:11px; font-weight:600; text-align:center; margin:0 0 8px;} ' +
-      '.flr4a-table{table-layout:auto; width:auto; margin:0 auto; border-collapse:collapse; font-size:10px;} ' +
+      '.flr-form-sub{font-size:12px; font-weight:600; text-align:center; margin:0 0 8px;} ' +
+      '.flr4a-table{table-layout:auto; width:auto; margin:0 auto; border-collapse:collapse; font-size:12px;} ' +
       '.flr4a-table th,.flr4a-table td{border:1px solid #888; padding:4px 8px; text-align:center; white-space:nowrap;} ' +
-      '.flr4a-table th{background:#f3f4f6; font-weight:700; font-size:9px;} ' +
+      '.flr4a-table th{background:#f3f4f6; font-weight:700; font-size:12px;} ' +
       '.flr4a-table td.flr4a-row-label{text-align:left; font-weight:700;} ' +
       '.foot-note{margin-top:8px; font-size:7.5px; color:#555; display:flex; justify-content:space-between;} ' +
       '@media print{ .foot-note{ position:fixed; bottom:0; left:0; right:0; } }' +
@@ -6418,7 +6579,7 @@
   // and doesn't know the main app's CSS variables.
   function closingStatBox(label, value, emphasis){
     return '<div style="flex:1; min-width:150px; border:1px solid var(--border, #ddd); border-radius:10px; padding:12px 14px;">' +
-      '<div style="font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted, #777);">' + escapeHtml(label) + '</div>' +
+      '<div style="font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted, #777);">' + escapeHtml(label) + '</div>' +
       '<div style="font-size:20px; font-weight:700; margin-top:3px;' + (emphasis ? ' color:' + emphasis + ';' : '') + '">' + value + '</div></div>';
   }
 
@@ -6549,7 +6710,7 @@
       modeKeys.filter(function(m){ return m !== "Cash"; }).forEach(function(mode){ html += closingRow(escapeHtml(mode), fmt(byMode[mode])); });
       html += closingRow("Total in Bank", fmt(bankCollected), true);
     }
-    html += '<div class="muted" style="font-size:11px; margin-top:6px;">Digital payments settle straight to the bank account -- they never sit in the physical drawer, so they\'re kept separate from the cash count above.</div>';
+    html += '<div class="muted" style="font-size:12px; margin-top:6px;">Digital payments settle straight to the bank account -- they never sit in the physical drawer, so they\'re kept separate from the cash count above.</div>';
     html += '</div>';
     html += '</div>';
     return html;
@@ -7120,7 +7281,7 @@
     var dateLabel = isSingleDay
       ? "DATE : " + new Date(fromKey).toLocaleDateString("en-GB")
       : "PERIOD : " + new Date(fromKey).toLocaleDateString("en-GB") + " to " + new Date(toKey).toLocaleDateString("en-GB");
-    return '<div style="display:flex; justify-content:space-between; align-items:center; gap:14px; border:0.5px solid #888; padding:4px 8px; margin-bottom:6px; font-size:10px; font-weight:600;">' +
+    return '<div style="display:flex; justify-content:space-between; align-items:center; gap:14px; border:0.5px solid #888; padding:4px 8px; margin-bottom:6px; font-size:12px; font-weight:600;">' +
       '<span>LICENCE NO : ' + escapeHtml(biz.exciseLicenseNo || "(not set)") + ' (' + escapeHtml(biz.exciseLicenseType || "FL-III") + ')</span>' +
       '<span>' + escapeHtml(monthYear) + '</span>' +
       '<span>' + escapeHtml(biz.name || "Hotel Pro") + '</span>' +
@@ -7184,8 +7345,8 @@
     var fmtDate = function(k){ return new Date(k).toLocaleDateString("en-GB", {day: "2-digit", month: "short", year: "numeric"}).replace(/ /g, "-"); };
     return '<div class="flr-form-title">Form F.L.R. 4A <span style="font-weight:400;">(see Rule 15(II))</span></div>' +
       '<div class="flr-form-sub">MONTHLY RETURN OF TRANSACTIONS OF FOREIGN LIQUOR EFFECTED BY HOLDER OF VENDOR\'S/HOTEL/CLUB LICENCE</div>' +
-      '<div style="text-align:center; font-weight:700; font-size:11px; margin-bottom:4px;">' + escapeHtml(biz.name || "Hotel Pro") + ' (LIC.NO:' + escapeHtml(biz.exciseLicenseNo || "not set") + ')</div>' +
-      '<div style="text-align:center; font-size:10px; font-weight:600; margin-bottom:10px;">From Date : ' + fmtDate(fromKey) + '&nbsp;&nbsp;To Date : ' + fmtDate(toKey) + '</div>';
+      '<div style="text-align:center; font-weight:700; font-size:12px; margin-bottom:4px;">' + escapeHtml(biz.name || "Hotel Pro") + ' (LIC.NO:' + escapeHtml(biz.exciseLicenseNo || "not set") + ')</div>' +
+      '<div style="text-align:center; font-size:12px; font-weight:600; margin-bottom:10px;">From Date : ' + fmtDate(fromKey) + '&nbsp;&nbsp;To Date : ' + fmtDate(toKey) + '</div>';
   }
 
   function buildFlr4aMonthlyHtml(fromKey, toKey){
@@ -7690,10 +7851,10 @@
   function buildVendorStatementHtml(vendor, fromKey, toKey){
     var stmt = computeVendorStatement(vendor, fromKey, toKey);
     var html = '<div style="display:flex; flex-wrap:wrap; gap:18px; margin-bottom:4px; font-size:13px;">';
-    html += '<div><div class="muted" style="font-size:11px;">Phone</div>' + escapeHtml(vendor.phone || "-") + '</div>';
-    html += '<div><div class="muted" style="font-size:11px;">GSTIN</div>' + escapeHtml(vendor.gstin || "-") + '</div>';
-    html += '<div><div class="muted" style="font-size:11px;">Excise License</div>' + escapeHtml(vendor.exciseLicenseNo || "-") + '</div>';
-    html += '<div><div class="muted" style="font-size:11px;">On Ledger Since</div>' + (vendor.createdAt ? new Date(vendor.createdAt).toLocaleDateString() : "-") + '</div>';
+    html += '<div><div class="muted" style="font-size:12px;">Phone</div>' + escapeHtml(vendor.phone || "-") + '</div>';
+    html += '<div><div class="muted" style="font-size:12px;">GSTIN</div>' + escapeHtml(vendor.gstin || "-") + '</div>';
+    html += '<div><div class="muted" style="font-size:12px;">Excise License</div>' + escapeHtml(vendor.exciseLicenseNo || "-") + '</div>';
+    html += '<div><div class="muted" style="font-size:12px;">On Ledger Since</div>' + (vendor.createdAt ? new Date(vendor.createdAt).toLocaleDateString() : "-") + '</div>';
     html += '</div>';
 
     html += '<div style="display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 16px;">';
@@ -7722,9 +7883,9 @@
       var desc = d.desc;
       if(r.purchase){
         var itemsSummary = (r.purchase.items || []).map(function(it){ return escapeHtml(it.name) + " x" + it.qty + " @" + fmt(it.rate); }).join(", ");
-        if(itemsSummary) desc += '<div class="muted" style="font-size:11px;">' + itemsSummary + '</div>';
+        if(itemsSummary) desc += '<div class="muted" style="font-size:12px;">' + itemsSummary + '</div>';
       }
-      if(r.type === "purchase-cash") desc += '<div class="muted" style="font-size:11px;">Paid in cash -- no effect on balance</div>';
+      if(r.type === "purchase-cash") desc += '<div class="muted" style="font-size:12px;">Paid in cash -- no effect on balance</div>';
       if(d.isDeleted) desc += ' <span style="color:var(--danger, #c0392b); font-style:normal; font-weight:600;">[DELETED]</span>';
       var amountVal = (r.type === "purchase" || r.type === "purchase-cash") ? (r.purchase ? r.purchase.total : 0) : Math.abs(r.amount);
       var rowStyle = d.isDeleted ? ' style="opacity:0.55; text-decoration:line-through;"' : '';
@@ -7856,8 +8017,8 @@
   function buildCustomerStatementHtml(customer, fromKey, toKey){
     var stmt = computeCustomerStatement(customer, fromKey, toKey);
     var html = '<div style="display:flex; flex-wrap:wrap; gap:18px; margin-bottom:4px; font-size:13px;">';
-    html += '<div><div class="muted" style="font-size:11px;">Phone</div>' + escapeHtml(customer.phone || "-") + '</div>';
-    html += '<div><div class="muted" style="font-size:11px;">On Ledger Since</div>' + (customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : "-") + '</div>';
+    html += '<div><div class="muted" style="font-size:12px;">Phone</div>' + escapeHtml(customer.phone || "-") + '</div>';
+    html += '<div><div class="muted" style="font-size:12px;">On Ledger Since</div>' + (customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : "-") + '</div>';
     html += '</div>';
 
     html += '<div style="display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 16px;">';
@@ -7887,7 +8048,7 @@
       if(r.bill){
         desc += " -- " + escapeHtml(r.bill.billNo);
         var itemsSummary = (r.bill.items || []).map(function(it){ return escapeHtml(it.name) + " x" + it.qty; }).join(", ");
-        if(itemsSummary) desc += '<div class="muted" style="font-size:11px;">' + itemsSummary + '</div>';
+        if(itemsSummary) desc += '<div class="muted" style="font-size:12px;">' + itemsSummary + '</div>';
       } else if(r.note){
         desc += " -- " + escapeHtml(r.note);
       }
@@ -8093,7 +8254,7 @@
       shownCustomers.forEach(function(c){
         var open = (c.balance || 0) > 0.005 ? customerOpenDocs(c) : [];
         var over = c.creditLimit > 0 && (c.balance || 0) > c.creditLimit;
-        html += '<tr><td>' + escapeHtml(c.name) + (c.phone ? '<div class="muted" style="font-size:11px;">' + escapeHtml(c.phone) + '</div>' : '') +
+        html += '<tr><td>' + escapeHtml(c.name) + (c.phone ? '<div class="muted" style="font-size:12px;">' + escapeHtml(c.phone) + '</div>' : '') +
           (c.creditLimit > 0 ? '<div class="ledger-sub' + (over ? ' over' : '') + '">Limit ' + fmt(c.creditLimit) + (over ? ' -- OVER by ' + fmt(c.balance - c.creditLimit) : '') + '</div>' : '') +
           '</td><td style="text-align:right;' + ((c.balance||0) > 0 ? ' color:var(--danger); font-weight:700;' : '') + '">' + fmt(c.balance || 0) +
           (open.length ? '<div style="margin-top:3px;">' + ageChipsHtml(ageTotals(open)) + '</div>' : '') +
@@ -8145,7 +8306,7 @@
         if(due.overdue > 0.005) dueLine = '<div class="ledger-sub over">Overdue ' + fmt(due.overdue) + (v.creditDays ? ' (terms ' + v.creditDays + ' days)' : '') + '</div>';
         else if(due.nextDue) dueLine = '<div class="ledger-sub">Next due ' + new Date(due.nextDue).toLocaleDateString() + '</div>';
         else if(!v.creditDays && open.length) dueLine = '<div class="ledger-sub">No credit terms set (Setup &gt; Vendors &gt; Edit)</div>';
-        vhtml += '<tr><td>' + escapeHtml(v.name) + (v.phone ? '<div class="muted" style="font-size:11px;">' + escapeHtml(v.phone) + '</div>' : '') + dueLine + '</td><td style="text-align:right;' + ((v.balance||0) > 0 ? ' color:var(--danger); font-weight:700;' : '') + '">' + fmt(v.balance || 0) + (open.length ? '<div style="margin-top:3px;">' + ageChipsHtml(ageTotals(open)) + '</div>' : '') + '</td><td><button class="btn small secondary" data-vendpay="' + v.id + '">Record Payment</button> <button class="btn small gold" data-vendaccount="' + v.id + '">Account</button></td></tr>';
+        vhtml += '<tr><td>' + escapeHtml(v.name) + (v.phone ? '<div class="muted" style="font-size:12px;">' + escapeHtml(v.phone) + '</div>' : '') + dueLine + '</td><td style="text-align:right;' + ((v.balance||0) > 0 ? ' color:var(--danger); font-weight:700;' : '') + '">' + fmt(v.balance || 0) + (open.length ? '<div style="margin-top:3px;">' + ageChipsHtml(ageTotals(open)) + '</div>' : '') + '</td><td><button class="btn small secondary" data-vendpay="' + v.id + '">Record Payment</button> <button class="btn small gold" data-vendaccount="' + v.id + '">Account</button></td></tr>';
       });
       vhtml += '</tbody></table>';
       vendBox.innerHTML = vhtml;
@@ -8690,7 +8851,7 @@
     if(expanded){
       html += '<table><thead><tr><th>Item</th><th>Brand</th><th>Code</th><th>Bottle Size</th><th style="text-align:right;">Rate</th><th>Tracked</th><th>Excise</th><th>Favorite</th><th></th></tr></thead><tbody>';
       groupItems.forEach(function(i){
-        html += '<tr><td>' + escapeHtml(i.name) + '</td><td>' + escapeHtml(i.brand || "-") + (i.liquorType ? '<div class="muted" style="font-size:11px;">' + escapeHtml(i.liquorType) + '</div>' : '') + '</td><td>' + escapeHtml(i.itemCode || "-") + '</td><td>' + escapeHtml(i.bottleSize || "-") + '</td><td><input type="number" class="item-rate-edit" data-itemrate="' + i.id + '" value="' + i.saleRate + '" min="0" step="0.01" style="width:85px; text-align:right;"></td><td>' + (i.trackStock ? "Yes" : "No") + '</td><td>' + (isItemExciseTracked(i) ? '<span style="color:var(--gold); font-weight:600;">Yes</span>' : "No") + (isItemExciseTracked(i) ? '<div class="muted" style="font-size:11px;">SCM: ' + (i.scmItemCode ? escapeHtml(i.scmItemCode) : '<span style="color:var(--danger);">not mapped</span>') + '</div>' : '') + '</td><td><button class="btn small ' + (i.isFavorite ? "gold" : "secondary") + '" data-togglefav="' + i.id + '">' + (i.isFavorite ? "★ Yes" : "☆ No") + '</button></td><td><button class="btn small secondary" data-editbrand="' + i.id + '">Edit / Brand Info</button> <button class="btn small secondary" data-movecat="' + i.id + '">Move</button> <button class="btn small secondary" data-barcode="' + i.id + '">Barcode</button> <button class="btn small secondary" data-pegcalc="' + i.id + '">Peg Calculator</button> <button class="btn small danger" data-rmitem="' + i.id + '">Remove</button></td></tr>';
+        html += '<tr><td>' + escapeHtml(i.name) + '</td><td>' + escapeHtml(i.brand || "-") + (i.liquorType ? '<div class="muted" style="font-size:12px;">' + escapeHtml(i.liquorType) + '</div>' : '') + '</td><td>' + escapeHtml(i.itemCode || "-") + '</td><td>' + escapeHtml(i.bottleSize || "-") + '</td><td><input type="number" class="item-rate-edit" data-itemrate="' + i.id + '" value="' + i.saleRate + '" min="0" step="0.01" style="width:85px; text-align:right;"></td><td>' + (i.trackStock ? "Yes" : "No") + '</td><td>' + (isItemExciseTracked(i) ? '<span style="color:var(--gold); font-weight:600;">Yes</span>' : "No") + (isItemExciseTracked(i) ? '<div class="muted" style="font-size:12px;">SCM: ' + (i.scmItemCode ? escapeHtml(i.scmItemCode) : '<span style="color:var(--danger);">not mapped</span>') + '</div>' : '') + '</td><td><button class="btn small ' + (i.isFavorite ? "gold" : "secondary") + '" data-togglefav="' + i.id + '">' + (i.isFavorite ? "★ Yes" : "☆ No") + '</button></td><td><button class="btn small secondary" data-editbrand="' + i.id + '">Edit / Brand Info</button> <button class="btn small secondary" data-movecat="' + i.id + '">Move</button> <button class="btn small secondary" data-barcode="' + i.id + '">Barcode</button> <button class="btn small secondary" data-pegcalc="' + i.id + '">Peg Calculator</button> <button class="btn small danger" data-rmitem="' + i.id + '">Remove</button></td></tr>';
       });
       html += '</tbody></table>';
     }

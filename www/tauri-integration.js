@@ -10,7 +10,7 @@
   var IS_TAURI = !!(window.__TAURI__ && window.__TAURI__.core);
   window.IS_TAURI = IS_TAURI;
 
-  var APP_VERSION = '0.1.7';
+  var APP_VERSION = '0.1.8';
   var PRODUCT_ID = 'bar-pos';
   var LICENSE_API_BASE = 'https://licensing-platform.pages.dev';
   var LICENSE_STORAGE_KEY = 'barBillLicense_v1';

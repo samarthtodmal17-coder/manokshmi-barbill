@@ -1,12 +1,12 @@
 {
   "name": "manokshmi-barbill",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "scripts": {
     "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build",
-    "test": "node tools/audit-wiring.mjs && node tools/menu-sync.test.mjs && node tools/billing.test.mjs && node tools/stock-ledger.test.mjs && node tools/reports.test.mjs && node tools/staff-setup.test.mjs && node tools/more-flows.test.mjs && node tools/menu-entry.test.mjs && node tools/ui-wiring.test.mjs && node tools/crash-sweep.test.mjs && node tools/fuzz.test.mjs && node tools/marathi.test.mjs && node tools/perf.test.mjs && node tools/test-adapter.mjs"
+    "test": "node tools/audit-wiring.mjs && node tools/menu-sync.test.mjs && node tools/billing.test.mjs && node tools/stock-ledger.test.mjs && node tools/reports.test.mjs && node tools/staff-setup.test.mjs && node tools/more-flows.test.mjs && node tools/menu-entry.test.mjs && node tools/ui-wiring.test.mjs && node tools/crash-sweep.test.mjs && node tools/fuzz.test.mjs && node tools/marathi.test.mjs && node tools/perf.test.mjs && node tools/ux.test.mjs && node tools/test-adapter.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
