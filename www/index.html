@@ -708,6 +708,23 @@
 
   .undo-bar{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%); z-index:10000; display:none; align-items:center; gap:14px; background:#1c2c56; color:#fff; padding:10px 14px 10px 18px; border-radius:12px; box-shadow:var(--shadow-lg); font-size:14px; font-weight:600; }
   .undo-bar button{ background:var(--gold); color:#fff; border:none; border-radius:8px; padding:6px 16px; font-weight:800; cursor:pointer; font-size:14px; }
+
+  /* ===== Billing: tiny favourites + categories, maximum room for the full menu ===== */
+  #screen-billing #posFavRow{ margin-top:4px !important; }
+  #screen-billing #posFavRow > label{ display:none; }
+  #screen-billing .fav-grid{ display:flex; flex-wrap:wrap; gap:4px; margin:2px 0; max-height:52px; overflow-y:auto; }
+  #screen-billing .fav-btn{ min-height:0; flex-direction:row; align-items:center; gap:5px; padding:2px 8px; border-radius:12px; border-left-width:1px; font-size:12px; }
+  #screen-billing .fav-btn .fb-name{ font-size:12px; font-weight:700; display:block; -webkit-line-clamp:unset; white-space:nowrap; }
+  #screen-billing .fav-btn .fb-price, #screen-billing .fav-btn .fb-star{ display:none; }
+  #screen-billing .fav-btn .fb-low{ position:static; padding:0 4px; font-size:12px; }
+  #screen-billing .cat-chip-row{ margin:3px 0; gap:3px; }
+  #screen-billing .cat-chip{ padding:1px 8px; font-size:12px; border-width:1px; border-radius:11px; line-height:1.5; }
+  #screen-billing #posItemsPanel .row{ margin-top:2px !important; gap:6px !important; }
+  #screen-billing #posSortMode{ flex:0 0 120px !important; padding:3px 6px; font-size:12px; }
+  #screen-billing #posItemsToggle{ margin-top:3px !important; padding:3px 8px; }
+  #screen-billing .pos-search-big{ padding:8px 12px; }
+  #screen-billing .kbd-hint{ display:none; }
+  #screen-billing #posSearchResults{ margin-top:3px; }
 </style>
 </head>
 <body>
@@ -951,7 +968,7 @@
             <div class="card">
               <input type="text" id="posItemSearch" class="pos-search-big" placeholder="Search item / scan barcode  [F2]   e.g. 2*rum">
               <div id="posFavRow" style="display:none; margin-top:8px;">
-                <label data-i18n="favorites">Favorites</label> <span class="muted" style="font-size:12px;">starred items + top sellers (last 30 days)</span>
+                <label data-i18n="favorites">Favorites</label> 
                 <div class="cat-chip-row" id="posFavChips"></div>
               </div>
               <div class="item-group-header" id="posItemsToggle" style="margin-top:8px; cursor:pointer;">
@@ -4623,14 +4640,9 @@
   function renderPosFavChips(){
     var favRow = document.getElementById("posFavRow");
     var wrap = document.getElementById("posFavChips");
-    var MAX = 16;
+    var MAX = 24;
     var favs = data.items.filter(function(i){ return i.isFavorite && i.saleRate > 0; });
     var star = favs.length;
-    topSellerIds(MAX + favs.length).forEach(function(id){
-      if(favs.length >= MAX) return;
-      var it = data.items.filter(function(x){ return x.id === id; })[0];
-      if(it && !it.isFavorite && it.saleRate > 0) favs.push(it);
-    });
     favs = favs.slice(0, MAX);
     if(favs.length === 0){ favRow.style.display = "none"; wrap.innerHTML = ""; return; }
     favRow.style.display = "block";

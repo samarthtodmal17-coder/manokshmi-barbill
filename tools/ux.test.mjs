@@ -52,10 +52,11 @@ section('[X6] One-tap favourites grid');
   const n0 = b.E(`(currentOrder()&&currentOrder().items||[]).length`);
   btn.click();
   ok(b.E(`currentOrder().items.length`) === n0 + 1, 'one tap adds the item to the bill');
-  // top sellers fill the grid when nothing is starred
+  // top sellers must NOT be pulled into favourites
   const c = await app(s => { s.items.forEach(i=>i.isFavorite=false); const it = s.items[0]; s.bills.push({id:'b1', billNo:'1', date:new Date().toISOString(), items:[{itemId:it.id, name:it.name, price:it.saleRate, qty:5}], total:it.saleRate*5, paymentMode:'Cash'}); });
   c.E(`switchScreen('billing')`); c.E(`renderBillingScreen()`);
-  ok(c.$('posFavChips').querySelectorAll('.fav-btn').length === 1, 'top seller auto-appears with no stars');
+  eq(c.$('posFavChips').querySelectorAll('.fav-btn').length, 0, 'best sellers are not auto-added to favourites');
+  ok(c.$('posFavRow').style.display === 'none', 'favourites row hidden when nothing is starred');
 }
 section('[X7] Custom confirm dialog');
 {
