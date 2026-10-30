@@ -4617,11 +4617,13 @@
     // sub-totals) sits a size or two smaller instead of one flat size.
     var html = '<div class="r-center" style="font-weight:900; font-size:20px; letter-spacing:0.3px;">' + escapeHtml(b.name) + '</div>';
     if(b.address) html += '<div class="r-center" style="font-size:12px;">' + escapeHtml(b.address) + '</div>';
+    if(b.phone) html += '<div class="r-center" style="font-size:12px;">Ph: ' + escapeHtml(b.phone) + '</div>';
     html += '<hr>';
     html += '<div style="font-size:12px;">Bill No: ' + escapeHtml(bill.billNo) + '</div>';
     html += '<div style="font-size:12px;">' + new Date(bill.date).toLocaleString() + '</div>';
     if(bill.tableLabel) html += '<div style="font-size:12px;">Table: ' + escapeHtml(bill.tableLabel) + '</div>';
     if(bill.customer) html += '<div style="font-size:12px;">Customer: ' + escapeHtml(bill.customer) + '</div>';
+    if(bill.customerPhone) html += '<div style="font-size:12px;">Mobile: ' + escapeHtml(bill.customerPhone) + '</div>';
     if(bill.staff) html += '<div style="font-size:12px;">Served by: ' + escapeHtml(bill.staff) + '</div>';
     html += '<hr>';
     html += '<table><thead><tr><th>Item</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Amt</th></tr></thead><tbody>';

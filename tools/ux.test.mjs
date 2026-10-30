@@ -264,6 +264,19 @@ section('[X16] Opened bottles with exact ml left');
   a.E(`addPegToCart(data.items.find(function(i){return i.id==='i_rs';}), 60, 200)`);
   eq(a.E(`currentOrder().items[0].qty`), 1, 'only one 60 ml peg can be sold from a bottle with 100 ml left');
 }
+section('[X17] Mobile numbers on the printed bill');
+{
+  const a = await app(s => { s.business.phone = '9876543210'; });
+  a.E(`switchScreen('billing')`); a.E(`selectTable('t1')`); a.search('cola');
+  a.$('posCustomerName').value = 'Ravi'; a.$('posCustomerName').dispatchEvent({type:'input', bubbles:true});
+  a.$('posCustomerPhone').value = '9123456780'; a.$('posCustomerPhone').dispatchEvent({type:'input', bubbles:true});
+  a.$('btnSavePrintBill').click();
+  const r = a.$('receiptContent').innerHTML;
+  ok(/Ph: 9876543210/.test(r), 'business mobile shown under the address');
+  ok(/Mobile: 9123456780/.test(r), 'customer mobile shown');
+  const b = await app(s => { s.business.phone = ''; }); b.E(`switchScreen('billing')`); b.E(`selectTable('t1')`); b.search('cola'); b.$('btnSavePrintBill').click();
+  ok(!/Ph:|Mobile:/.test(b.$('receiptContent').innerHTML), 'no empty Ph/Mobile lines when none is set');
+}
 section('[X4] No text below 12px in the stylesheet');
 {
   const fs = await import('node:fs'); const html = fs.readFileSync(new URL('../www/index.html', import.meta.url), 'utf8');
