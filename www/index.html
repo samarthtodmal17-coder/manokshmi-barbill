@@ -725,6 +725,9 @@
   #screen-billing .pos-search-big{ padding:8px 12px; }
   #screen-billing .kbd-hint{ display:none; }
   #screen-billing #posSearchResults{ margin-top:3px; }
+
+  .search-result-wrap.no-stock{ opacity:.55; }
+  .search-result-wrap .out-tag{ align-self:flex-start; font-size:12px; font-weight:800; color:#fff; background:var(--danger); border-radius:6px; padding:0 6px; }
 </style>
 </head>
 <body>
@@ -1175,8 +1178,12 @@
               <input type="number" id="openingStockQty" min="0" step="0.01">
             </div>
             <div>
-              <label>Opened bottles <span class="muted" style="font-weight:400;">(counted as full bottles)</span></label>
+              <label>Opened bottles <span class="muted" style="font-weight:400;">(how many)</span></label>
               <input type="number" id="openingStockLooseCount" min="0" step="1" placeholder="e.g. 2">
+            </div>
+            <div>
+              <label>Total ml left in them <span class="muted" style="font-weight:400;">(optional)</span></label>
+              <input type="number" id="openingStockLooseMl" min="0" step="1" placeholder="blank = count each as full">
             </div>
             <div>
               <label>As of Date</label>
@@ -2928,6 +2935,55 @@
     return Math.round((c.qty * c.pegMl / bottleMl) * 10000) / 10000;
   }
 
+  /* ---- No negative stock: a sale can never take counter stock below zero ---- */
+  function exactQtyText(item, v){
+    v = Math.round((v || 0) * 10000) / 10000;
+    var size = item && item.bottleSize ? parseSizeMl(item.bottleSize) : 0;
+    if(!size) return String(Math.round(v * 100) / 100);
+    var totalMl = Math.round(v * size), whole = Math.floor(totalMl / size), rem = totalMl - whole * size;
+    var out = [];
+    if(whole > 0) out.push(whole + (whole === 1 ? " bottle" : " bottles"));
+    if(rem > 0) out.push(rem + " ml");
+    return out.length ? out.join(" ") : "0";
+  }
+  // lines: [{itemId, qty, pegMl}] ; credit: {itemId: bottles already deducted that will be given back}
+  function stockShortfalls(lines, credit){
+    var need = {};
+    (lines || []).forEach(function(c){
+      var item = data.items.filter(function(m){ return m.id === c.itemId; })[0];
+      if(!item || !item.trackStock) return;
+      need[item.id] = (need[item.id] || 0) + stockQtyForCartLine(item, c);
+    });
+    var out = [];
+    Object.keys(need).forEach(function(id){
+      var item = data.items.filter(function(m){ return m.id === id; })[0];
+      var have = (item.stockCounter || 0) + ((credit && credit[id]) || 0);
+      if(need[id] > have + 0.00005) out.push({item: item, need: need[id], have: Math.max(0, have)});
+    });
+    return out;
+  }
+  function shortfallMessage(list){
+    return list.map(function(x){
+      var it = x.item, god = it.stockGodown || 0;
+      var base = x.have <= 0.00005 && !(it.stockCounter > 0)
+        ? "No counter stock for " + it.name
+        : it.name + ": only " + exactQtyText(it, x.have) + " in counter stock (need " + exactQtyText(it, x.need) + ")";
+      return base + (god > 0 ? " - godown has " + exactQtyText(it, god) + ", use Transfer" : " - add a purchase or opening stock");
+    }).join(" | ");
+  }
+  function orderLinesWith(order, extra){
+    var lines = order.items.map(function(c){ return {itemId: c.itemId, qty: c.qty, pegMl: c.pegMl || null}; });
+    if(extra) lines.push(extra);
+    return lines;
+  }
+  // true = allowed. Shows why and returns false when the extra quantity would not be in stock.
+  function stockAllows(order, extra){
+    var bad = stockShortfalls(orderLinesWith(order, extra));
+    if(!bad.length) return true;
+    showToast(shortfallMessage(bad));
+    return false;
+  }
+
   function deductCounterStockForSale(cartItems, refId){
     (cartItems || []).forEach(function(c){
       var item = data.items.find(function(m){ return m.id === c.itemId; });
@@ -3721,6 +3777,10 @@
       row.innerHTML = '<span class="it-name">' + escapeHtml(item.name) + '</span>' +
         '<span class="it-meta">' + escapeHtml([item.bottleSize, item.itemCode].filter(Boolean).join(" · ")) + '</span>' +
         '<span class="it-price">' + fmt(item.saleRate) + '</span>';
+      if(item.trackStock && (item.stockCounter || 0) <= 0.00005){
+        wrap.classList.add("no-stock");
+        row.insertAdjacentHTML("beforeend", '<span class="out-tag" data-no-mr="1">' + ((item.stockGodown || 0) > 0 ? "Counter 0" : "OUT") + '</span>');
+      }
       row.addEventListener("click", function(){ addItemToCart(item); });
       row.tabIndex = 0;
       row.addEventListener("keydown", function(e){
@@ -3982,6 +4042,7 @@
           selectedCartKey = null;
         }
       } else {
+        if(!stockAllows(order, {itemId: c.itemId, qty: 1, pegMl: c.pegMl || null})) return;
         c.qty += 1;
       }
       saveData(["openOrders"]);
@@ -4106,6 +4167,7 @@
     // clicking the item row would silently add onto a peg line of the same
     // item instead of starting a separate bottle line.
     var existing = order.items.find(function(c){ return c.itemId === item.id && !c.pegMl; });
+    if(!stockAllows(order, {itemId: item.id, qty: 1, pegMl: null})) return;
     if(existing){ existing.qty += 1; }
     else { order.items.push({key: uid("ci"), itemId: item.id, name: item.name, price: item.saleRate, qty: 1}); }
     saveData(["openOrders"]);
@@ -4117,6 +4179,7 @@
     if(!currentTableId){ showToast("Select a table first"); return; }
     var order = currentOrder();
     var existing = order.items.find(function(c){ return c.itemId === item.id && c.pegMl === ml; });
+    if(!stockAllows(order, {itemId: item.id, qty: 1, pegMl: ml})) return;
     if(existing){ existing.qty += 1; }
     else { order.items.push({key: uid("ci"), itemId: item.id, name: item.name, price: price, qty: 1, pegMl: ml}); }
     saveData(["openOrders"]);
@@ -4157,6 +4220,7 @@
         saveData(["openOrders"]); renderPosCart(); renderPosTableMap();
       });
       row.querySelector('[data-act="inc"]').addEventListener("click", function(){
+        if(!stockAllows(order, {itemId: c.itemId, qty: 1, pegMl: c.pegMl || null})) return;
         c.qty += 1; saveData(["openOrders"]); renderPosCart(); renderPosTableMap();
       });
       row.querySelector(".cart-rate").addEventListener("input", function(){
@@ -4399,6 +4463,8 @@
   document.getElementById("btnSavePrintBill").addEventListener("click", function(){
     var order = currentOrder();
     if(!order || order.items.length === 0){ showToast("Add at least one item first"); return; }
+    var shortList = stockShortfalls(orderLinesWith(order));
+    if(shortList.length){ showToast("Cannot bill - " + shortfallMessage(shortList)); return; }
 
     var paymentModeVal = document.getElementById("posPaymentMode").value;
     var splitEnabled = document.getElementById("posSplitEnabled").checked;
@@ -5068,6 +5134,11 @@
       if(!newCustomer){ showToast("Select a customer for the credit sale"); return; }
     }
 
+    var ownCredit = {};
+    data.stockLog.forEach(function(e){ if(e.refId === editingBill.id && e.location === "counter" && e.qtyChange < 0) ownCredit[e.itemId] = (ownCredit[e.itemId] || 0) - e.qtyChange; });
+    var editShort = stockShortfalls(editCart.map(function(c){ return {itemId: c.itemId, qty: c.qty, pegMl: c.pegMl || null}; }), ownCredit);
+    if(editShort.length){ showToast("Cannot save - " + shortfallMessage(editShort)); return; }
+
     var t = editOrderTotal();
     var newItemsSnapshot = editCart.map(function(c){ return {itemId: c.itemId, name: c.name, price: c.price, qty: c.qty, pegMl: c.pegMl || null}; });
     var summary = summarizeBillEdit(editingBill, newItemsSnapshot, t.discount, t.servicePercent, t.taxPercent, newPaymentMode, newCustomer ? newCustomer.id : null);
@@ -5413,9 +5484,19 @@
     if(!item){ showToast("Item not found"); return; }
     var looseBottles = parseInt(document.getElementById("openingStockLooseCount").value, 10);
     if(isNaN(looseBottles) || looseBottles < 0) looseBottles = 0;
+    var looseMl = parseFloat(document.getElementById("openingStockLooseMl").value);
+    if(isNaN(looseMl) || looseMl < 0) looseMl = 0;
     if(isNaN(qty)) qty = 0;
-    if(looseBottles > 0){
-      // An opened (loose) bottle is counted as a full bottle.
+    if(looseMl > 0){
+      // Exact: the ml actually left in the opened bottle(s).
+      var sizeMl = parseSizeMl(item.bottleSize);
+      if(!sizeMl){ showToast("Set the bottle size (e.g. 750 ml) for this item first, then enter ml left"); return; }
+      if(looseBottles < 1) looseBottles = 1;
+      if(looseMl > looseBottles * sizeMl){ showToast(looseBottles + " opened bottle(s) can hold at most " + (looseBottles * sizeMl) + " ml. Check the ml, or the number of bottles."); return; }
+      qty = Math.round((qty + looseMl / sizeMl) * 10000) / 10000;
+      notes = (notes ? notes + " · " : "") + "incl. " + looseBottles + " opened bottle" + (looseBottles > 1 ? "s" : "") + " with " + looseMl + " ml left";
+    } else if(looseBottles > 0){
+      // No ml given: each opened bottle is counted as a full bottle.
       qty = qty + looseBottles;
       notes = (notes ? notes + " · " : "") + "incl. " + looseBottles + " opened bottle" + (looseBottles > 1 ? "s" : "") + " counted as full";
     }
@@ -5447,7 +5528,7 @@
     data.stockLog[data.stockLog.length - 1].date = logDate;
 
     saveData(["items", "stockLog", "openingStockEntries"]);
-    document.getElementById("openingStockQty").value = ""; document.getElementById("openingStockLooseCount").value = "";
+    document.getElementById("openingStockQty").value = ""; document.getElementById("openingStockLooseCount").value = ""; document.getElementById("openingStockLooseMl").value = "";
     document.getElementById("openingStockNotes").value = "";
     renderStockScreen();
     showToast("Added " + qty + " x " + item.name + " as opening stock (" + asOfDate + ")");

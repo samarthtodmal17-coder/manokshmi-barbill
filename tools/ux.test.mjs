@@ -204,6 +204,66 @@ section('[X14] Bottle stock never shows a decimal');
   const f = v => a.E(`qtyDisp(data.items.find(function(i){return i.id==='i_rs';}), ${v})`);
   eq(f(2.4), '3', '2.4 shows as 3'); eq(f(10), '10', '10 stays 10'); eq(f(9.99999999), '10', 'float noise ignored'); eq(f(0.08), '1', 'last bottle still shows 1'); eq(f(0), '0', '0 shows 0');
 }
+section('[X15] Stock can never go negative');
+{
+  const mk = async (counter, godown) => { const a = await app(s => { const it = s.items.find(i=>i.id==='i_rs'); it.trackStock = true; it.stockCounter = counter; it.stockGodown = godown; s.bills = []; s.stockLog = []; }); a.E(`switchScreen('billing')`); a.E(`selectTable('t1')`); return a; };
+  const item = `data.items.find(function(i){return i.id==='i_rs';})`;
+  const add = a => a.E(`addItemToCart(${item})`);
+  const lines = a => a.E(`(currentOrder()&&currentOrder().items||[]).reduce(function(s,c){return s+c.qty;},0)`);
+  // 1. no stock at all
+  let a = await mk(0, 0); add(a);
+  eq(lines(a), 0, 'no stock: item is not added to the bill');
+  ok(a.toasts.some(t => /No counter stock for Royal Stag/.test(t) && /opening stock/.test(t)), 'tells the user to add stock');
+  // 2. stock only in godown
+  a = await mk(0, 5); add(a);
+  eq(lines(a), 0, 'godown only: blocked at the counter'); ok(a.toasts.some(t => /godown has 5 bottles, use Transfer/.test(t)), 'suggests Transfer');
+  // 3. exactly 2 in counter: 2 ok, third blocked
+  a = await mk(2, 0); add(a); add(a); add(a);
+  eq(lines(a), 2, 'only as many as are in stock can be added'); ok(a.toasts.some(t => /only 2 bottles in counter stock/.test(t)), 'says how many are left');
+  a.$('btnSavePrintBill').click();
+  eq(a.E(`${item}.stockCounter`), 0, 'after selling the last bottles stock is exactly 0, not negative'); eq(a.E(`data.bills.length`), 1, 'bill saved');
+  // 4. pegs from a partly used bottle
+  a = await mk(0.1, 0);
+  a.E(`addPegToCart(${item}, 60, 200)`); eq(lines(a), 1, '60 ml peg allowed with 75 ml left (0.1 bottle)');
+  a.E(`addPegToCart(${item}, 60, 200)`); eq(lines(a), 1, 'second 60 ml peg blocked (only 15 ml left)');
+  ok(a.toasts.some(t => /75 ml in counter stock|only 75 ml/.test(t)), 'message shows the ml left');
+  // 5. + button and save-time guard (stock reduced after items were added)
+  a = await mk(3, 0); add(a); add(a); a.E(`${item}.stockCounter = 1`);
+  a.$('btnSavePrintBill').click();
+  eq(a.E(`data.bills.length`), 0, 'save blocked when stock fell below the bill'); ok(a.toasts.some(t => /Cannot bill/.test(t)), 'user told');
+  eq(a.E(`${item}.stockCounter`), 1, 'stock untouched by the blocked bill');
+  // 6. untracked items never blocked
+  a = await mk(0, 0); a.E(`${item}.trackStock = false`); add(a); eq(lines(a), 1, 'untracked item sells freely');
+  // 7. editing a bill: its own stock is available again
+  a = await mk(2, 0); add(a); add(a); a.$('btnSavePrintBill').click();
+  const billId = a.E(`data.bills[0].id`);
+  eq(a.E(`${item}.stockCounter`), 0, 'sold both');
+  a.E(`switchScreen('history')`);
+  const edit = a.$('historyList').querySelector('[data-edit="' + billId + '"]'); ok(!!edit, 'edit button present'); if(edit) edit.click();
+  a.$('btnSaveBillEdit').click();
+  ok(a.E(`data.bills[0].items[0].qty`) === 2 && a.E(`${item}.stockCounter`) === 0, 'saving an unchanged edit does not trip the stock check');
+  // 8. menu tile tag
+  a = await mk(0, 0); a.E(`renderPosSearchResults()`); a.$('posItemSearch').value = 'royal'; a.$('posItemSearch').dispatchEvent({type:'input', bubbles:true});
+  ok(/out-tag/.test(a.$('posSearchResults').innerHTML), 'menu tile shows an OUT tag');
+}
+section('[X16] Opened bottles with exact ml left');
+{
+  const mk = async () => { const a = await app(s => { const it = s.items.find(i=>i.id==='i_rs'); it.stockCounter = 0; it.stockGodown = 0; s.stockLog = []; s.openingStockEntries = []; s.bills = []; }); a.E(`switchScreen('stock')`); return a; };
+  const stock = a => a.E(`data.items.find(function(i){return i.id==='i_rs';}).stockCounter`);
+  const run = (a, sealed, opened, ml) => { a.$('openingStockItemSelect').value = 'i_rs'; a.$('openingStockLocation').value = 'counter'; a.$('openingStockQty').value = sealed; a.$('openingStockLooseCount').value = opened; a.$('openingStockLooseMl').value = ml; a.$('openingStockDate').value = a.E(`localDateKey(businessNow())`); a.$('btnAddOpeningStock').click(); };
+  let a = await mk(); run(a, '2', '1', '300');
+  near(stock(a), 2 + 300 / 750, '2 sealed + 1 opened with 300 ml left = 2.4 bottles');
+  eq(a.E(`qtyDisp(data.items.find(function(i){return i.id==='i_rs';}), ${stock(a)})`), '3', 'screen shows 3 bottles');
+  a = await mk(); run(a, '0', '2', '500'); near(stock(a), 500 / 750, '2 opened bottles, 500 ml total left');
+  a = await mk(); run(a, '1', '1', ''); eq(stock(a), 2, 'no ml given: opened bottle counted as full');
+  a = await mk(); run(a, '1', '1', '900'); eq(stock(a), 0, 'more ml than one bottle holds is rejected'); ok(a.toasts.some(t => /can hold at most 750 ml/.test(t)), 'user told why');
+  // selling is limited by the real ml
+  a = await mk(); run(a, '0', '1', '100');
+  a.E(`switchScreen('billing')`); a.E(`selectTable('t1')`);
+  a.E(`addPegToCart(data.items.find(function(i){return i.id==='i_rs';}), 60, 200)`);
+  a.E(`addPegToCart(data.items.find(function(i){return i.id==='i_rs';}), 60, 200)`);
+  eq(a.E(`currentOrder().items[0].qty`), 1, 'only one 60 ml peg can be sold from a bottle with 100 ml left');
+}
 section('[X4] No text below 12px in the stylesheet');
 {
   const fs = await import('node:fs'); const html = fs.readFileSync(new URL('../www/index.html', import.meta.url), 'utf8');
