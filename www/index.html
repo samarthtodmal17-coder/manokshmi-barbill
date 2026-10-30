@@ -1171,8 +1171,12 @@
           </div>
           <div class="row">
             <div>
-              <label>Quantity</label>
+              <label>Sealed bottles</label>
               <input type="number" id="openingStockQty" min="0" step="0.01">
+            </div>
+            <div>
+              <label>Opened bottles <span class="muted" style="font-weight:400;">(counted as full bottles)</span></label>
+              <input type="number" id="openingStockLooseCount" min="0" step="1" placeholder="e.g. 2">
             </div>
             <div>
               <label>As of Date</label>
@@ -2881,6 +2885,20 @@
     if(!item.trackStock) return 0;
     var qty = location === "godown" ? (item.stockGodown || 0) : (item.stockCounter || 0);
     return qty * (item.costPrice || 0);
+  }
+
+  // Bottle stock is shown in whole bottles: a bottle that has been opened (pegs poured)
+  // still counts as a bottle until it is finished. Display only -- stored numbers
+  // and every report are untouched.
+  function qtyDisp(item, v){
+    v = Math.round((v || 0) * 10000) / 10000;
+    var ml = item && item.bottleSize ? parseSizeMl(item.bottleSize) : 0;
+    if(ml) return String(Math.ceil(v - 0.00005));
+    return String(Math.round(v * 100) / 100);
+  }
+  function itemQtyDisp(itemId, v){
+    var it = data.items.filter(function(x){ return x.id === itemId; })[0];
+    return qtyDisp(it, v);
   }
 
   // refId links a stock log entry back to whatever caused it -- a sale
@@ -5118,7 +5136,7 @@
             return;
           }
           var out = isOutOfStock(i);
-          html += '<tr><td>' + escapeHtml(i.name) + (i.brand ? '<div class="muted" style="font-size:12px;">' + escapeHtml(i.brand) + (i.bottleSize ? " -- " + escapeHtml(i.bottleSize) : "") + '</div>' : '') + (out ? ' <span style="color:var(--danger); font-size:12px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + (i.stockCounter || 0) + '</td><td style="text-align:right;">' + (i.stockGodown || 0) + '</td><td style="text-align:right;">' + itemTotalStock(i) + '</td><td><button class="btn small secondary" data-transfer="' + i.id + '">Transfer</button></td></tr>';
+          html += '<tr><td>' + escapeHtml(i.name) + (i.brand ? '<div class="muted" style="font-size:12px;">' + escapeHtml(i.brand) + (i.bottleSize ? " -- " + escapeHtml(i.bottleSize) : "") + '</div>' : '') + (out ? ' <span style="color:var(--danger); font-size:12px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + qtyDisp(i, i.stockCounter) + '</td><td style="text-align:right;">' + qtyDisp(i, i.stockGodown) + '</td><td style="text-align:right;">' + qtyDisp(i, itemTotalStock(i)) + '</td><td><button class="btn small secondary" data-transfer="' + i.id + '">Transfer</button></td></tr>';
         });
         html += '</tbody></table>';
       } else {
@@ -5129,7 +5147,7 @@
             return;
           }
           var out = isOutOfStock(i);
-          html += '<tr><td>' + escapeHtml(i.name) + (out ? ' <span style="color:var(--danger); font-size:12px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + itemTotalStock(i) + '</td></tr>';
+          html += '<tr><td>' + escapeHtml(i.name) + (out ? ' <span style="color:var(--danger); font-size:12px;">(OUT OF STOCK)</span>' : '') + '</td><td style="text-align:right;">' + qtyDisp(i, itemTotalStock(i)) + '</td></tr>';
         });
         html += '</tbody></table>';
       }
@@ -5393,7 +5411,15 @@
     if(!itemId){ showToast("Add a stock-tracked item first"); return; }
     var item = data.items.find(function(i){ return i.id === itemId; });
     if(!item){ showToast("Item not found"); return; }
-    if(isNaN(qty) || qty <= 0){ showToast("Enter a valid quantity"); return; }
+    var looseBottles = parseInt(document.getElementById("openingStockLooseCount").value, 10);
+    if(isNaN(looseBottles) || looseBottles < 0) looseBottles = 0;
+    if(isNaN(qty)) qty = 0;
+    if(looseBottles > 0){
+      // An opened (loose) bottle is counted as a full bottle.
+      qty = qty + looseBottles;
+      notes = (notes ? notes + " · " : "") + "incl. " + looseBottles + " opened bottle" + (looseBottles > 1 ? "s" : "") + " counted as full";
+    }
+    if(qty <= 0){ showToast("Enter the number of bottles (sealed and opened)"); return; }
     if(!asOfDate){ showToast("Pick the date this stock was true as of"); return; }
 
     var entry = {
@@ -5421,7 +5447,7 @@
     data.stockLog[data.stockLog.length - 1].date = logDate;
 
     saveData(["items", "stockLog", "openingStockEntries"]);
-    document.getElementById("openingStockQty").value = "";
+    document.getElementById("openingStockQty").value = ""; document.getElementById("openingStockLooseCount").value = "";
     document.getElementById("openingStockNotes").value = "";
     renderStockScreen();
     showToast("Added " + qty + " x " + item.name + " as opening stock (" + asOfDate + ")");
@@ -5433,7 +5459,7 @@
     if(entries.length === 0){ box.innerHTML = '<div class="empty-state">No opening stock entries yet.</div>'; return; }
     var html = '<table><thead><tr><th>As of</th><th>Item</th><th>Location</th><th style="text-align:right;">Qty</th><th>Notes</th><th></th></tr></thead><tbody>';
     entries.forEach(function(e){
-      html += '<tr><td>' + escapeHtml(e.asOfDate) + '</td><td>' + escapeHtml(liveItemName(e.itemId, e.itemName)) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + e.qty + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delopening="' + e.id + '">Delete</button></td></tr>';
+      html += '<tr><td>' + escapeHtml(e.asOfDate) + '</td><td>' + escapeHtml(liveItemName(e.itemId, e.itemName)) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + itemQtyDisp(e.itemId, e.qty) + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delopening="' + e.id + '">Delete</button></td></tr>';
     });
     html += '</tbody></table>';
     box.innerHTML = html;
@@ -5539,7 +5565,7 @@
       if(expanded){
         html += '<table><thead><tr><th>Item</th><th>Location</th><th style="text-align:right;">Qty</th><th>Reason</th><th>Notes</th><th></th></tr></thead><tbody>';
         groupEntries.forEach(function(e){
-          html += '<tr><td>' + escapeHtml(liveItemName(e.itemId, e.itemName)) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + e.qty + '</td><td>' + escapeHtml(e.reason) + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delwaste="' + e.id + '">Delete</button></td></tr>';
+          html += '<tr><td>' + escapeHtml(liveItemName(e.itemId, e.itemName)) + '</td><td>' + (e.location === "godown" ? "Godown" : "Counter") + '</td><td style="text-align:right;">' + itemQtyDisp(e.itemId, e.qty) + '</td><td>' + escapeHtml(e.reason) + '</td><td>' + escapeHtml(e.notes || "-") + '</td><td><button class="btn small danger" data-delwaste="' + e.id + '">Delete</button></td></tr>';
         });
         html += '</tbody></table>';
       }

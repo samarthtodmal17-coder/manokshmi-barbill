@@ -1,5 +1,5 @@
 // UX layer: attention strip, setup guide, save indicator, text size, shortcuts, labels.
-import {app, ok, eq, section, done} from './flows.mjs';
+import {app, ok, eq, near, section, done} from './flows.mjs';
 section('[X1] Dashboard attention strip');
 {
   const a = await app(s => { s.items.find(i=>i.id==='i_rs').stockCounter = 0; s.items.find(i=>i.id==='i_rs').stockGodown = 0; s.vendors[0] && (s.vendors[0].balance = 500); });
@@ -161,6 +161,48 @@ section('[X11] Undo a deleted bill restores stock exactly');
   a.$('btnUndo').click();
   ok(!a.E(`data.bills.find(function(b){return b.id==='${billId}';}).deleted`), 'Undo un-deletes the bill');
   eq(snapStock(), afterSale, 'stock is exactly as it was before the delete');
+}
+section('[X12] Opening stock: opened (loose) bottles count as full bottles');
+{
+  const a = await app();
+  a.E(`switchScreen('stock')`);
+  const id = a.E(`data.items.filter(function(i){return i.bottleSize && i.trackStock;})[0].id`);
+  const stock = () => a.E(`data.items.find(function(i){return i.id==='${id}';}).stockCounter`);
+  const before = stock();
+  const run = (sealed, opened) => { a.$('openingStockItemSelect').value = id; a.$('openingStockLocation').value = 'counter'; a.$('openingStockQty').value = sealed; a.$('openingStockLooseCount').value = opened; a.$('openingStockDate').value = '2026-10-01'; a.$('btnAddOpeningStock').click(); };
+  run('2', '1');
+  eq(stock() - before, 3, '2 sealed + 1 opened bottle = 3 bottles in stock');
+  run('', '2'); eq(stock() - before, 5, 'opened bottles alone work (+2)');
+  ok(a.E(`data.openingStockEntries.some(function(e){return /opened bottle.*counted as full/.test(e.notes);})`), 'entry notes record it');
+}
+section('[X13] Reports unchanged; stock only drops by a whole bottle when a bottle is finished');
+{
+  const a = await app(s => { const it = s.items.find(i=>i.id==='i_rs'); it.stockCounter = 0; it.stockGodown = 0; s.stockLog = []; s.openingStockEntries = []; s.bills = []; });
+  a.E(`switchScreen('stock')`);
+  const day = a.E(`localDateKey(businessNow())`);
+  a.$('openingStockItemSelect').value = 'i_rs'; a.$('openingStockLocation').value = 'counter'; a.$('openingStockQty').value = '2'; a.$('openingStockLooseCount').value = '1'; a.$('openingStockDate').value = day; a.$('btnAddOpeningStock').click();
+  const item = () => a.E(`data.items.find(function(i){return i.id==='i_rs';})`);
+  const show = () => { a.E(`renderStockScreen()`); Array.from(a.$('stockListLiquor').querySelectorAll('[data-togglestockgroup]')).forEach(h => h.click()); return a.$('stockListLiquor').innerHTML; };
+  a.E(`switchScreen('billing')`); a.E(`selectTable('t1')`);
+  a.E(`addPegToCart(data.items.find(function(i){return i.id==='i_rs';}), 60, 200)`); a.$('btnSavePrintBill').click();
+  eq(a.E(`qtyDisp(data.items.find(function(i){return i.id==='i_rs';}), data.items.find(function(i){return i.id==='i_rs';}).stockCounter)`), '3', 'after one peg the screen still shows 3 bottles (bottle not finished)');
+  a.E(`switchScreen('stock')`);
+  ok(/>3</.test(show()), 'stock table shows 3');
+  const p = a.E(`exciseItemPeriod('i_rs', '${day}', '${day}')`);
+  near(p.opening, 3, 'register opening = 3 bottles'); near(p.sales, 60 / a.E(`parseSizeMl(data.items.find(function(i){return i.id==='i_rs';}).bottleSize)`), 'register still records the exact peg');
+  near(p.opening + p.receipts - p.sales - p.wastage, p.closing, 'register arithmetic balances');
+  a.E(`switchScreen('billing')`); a.E(`selectTable('t2')`); a.search('royal stag'); 
+  const before = a.E(`qtyDisp(data.items.find(function(i){return i.id==='i_rs';}), data.items.find(function(i){return i.id==='i_rs';}).stockCounter)`);
+  eq(before, '3', 'still 3 before the next sale');
+  a.E(`addItemToCart(data.items.find(function(i){return i.id==='i_rs';}))`); a.$('btnSavePrintBill').click();
+  eq(a.E(`qtyDisp(data.items.find(function(i){return i.id==='i_rs';}), data.items.find(function(i){return i.id==='i_rs';}).stockCounter)`), '2', 'selling a full bottle drops the shown stock by one');
+  ok(a.E(`runMenuHealthCheck().filter(function(x){return /stock/i.test(x.text) && x.sev === 'error';}).length`) === 0, 'health check clean');
+}
+section('[X14] Bottle stock never shows a decimal');
+{
+  const a = await app();
+  const f = v => a.E(`qtyDisp(data.items.find(function(i){return i.id==='i_rs';}), ${v})`);
+  eq(f(2.4), '3', '2.4 shows as 3'); eq(f(10), '10', '10 stays 10'); eq(f(9.99999999), '10', 'float noise ignored'); eq(f(0.08), '1', 'last bottle still shows 1'); eq(f(0), '0', '0 shows 0');
 }
 section('[X4] No text below 12px in the stylesheet');
 {
