@@ -277,6 +277,44 @@ section('[X17] Mobile numbers on the printed bill');
   const b = await app(s => { s.business.phone = ''; }); b.E(`switchScreen('billing')`); b.E(`selectTable('t1')`); b.search('cola'); b.$('btnSavePrintBill').click();
   ok(!/Ph:|Mobile:/.test(b.$('receiptContent').innerHTML), 'no empty Ph/Mobile lines when none is set');
 }
+section('[X18] Purchase entry matches a real liquor invoice');
+{
+  // Satyam Spirits invoice: Blenders Pride 180 ml x 12 bottles = 4,676.00; stamp 5; carrying 30; TCS 94 => 4,805
+  const a = await app();
+  a.E(`switchScreen('purchase')`);
+  const item = a.E(`data.items.filter(function(i){return i.trackStock;})[0].id`);
+  a.E(`purCart.push({itemId:'${item}', name:'x', qty:12, rate:0}); renderPurCart()`);
+  const amt = a.$('purCartList').querySelector('.pur-amt'); ok(!!amt, 'line amount box exists');
+  amt.value = '4676'; amt.dispatchEvent({type:'input', bubbles:true});
+  near(a.E(`purCart[0].rate`), 4676 / 12, 'rate per bottle worked out from the printed line amount');
+  ok(!a.$('purCartList').querySelector('input.pur-rate'), 'no rate box - just quantity and total amount');
+  const q = a.$('purCartList').querySelector('.pur-qty'); q.value = '24'; q.dispatchEvent({type:'input', bubbles:true});
+  near(a.E(`purchaseTotal().subtotal`), 4676, 'changing quantity keeps the typed total amount'); near(a.E(`purCart[0].rate`), 4676 / 24, 'rate re-worked for the new quantity');
+  q.value = '12'; q.dispatchEvent({type:'input', bubbles:true});
+  near(a.E(`purchaseTotal().subtotal`), 4676, 'subtotal = 4,676.00');
+  const set = (id, v) => { a.$(id).value = v; a.$(id).dispatchEvent({type:'input', bubbles:true}); };
+  set('purStamp', '5'); set('purCarriage', '30'); set('purTcs', '94');
+  near(a.E(`purchaseTotal().total`), 4805, 'total = 4,805.00 like the invoice');
+  set('purInvoiceTotal', '4805'); ok(/Matches/.test(a.$('purTotalCheck').textContent), 'shows "Matches invoice"');
+  set('purInvoiceTotal', '4800'); ok(/Over by/.test(a.$('purTotalCheck').textContent), 'shows the difference when it does not match');
+  const vend = a.E(`data.vendors[0] && data.vendors[0].id`);
+  const bal0 = a.E(`data.vendors[0].balance || 0`);
+  a.$('purVendorSelect').value = vend; a.$('purPaymentMode').value = 'Credit';
+  a.$('btnSavePurchase').click(); eq(a.E(`data.purchases.length`), 0, 'save blocked while total differs from the invoice');
+  set('purInvoiceTotal', '4805'); a.$('btnSavePurchase').click();
+  eq(a.E(`data.purchases.length`), 1, 'saved when it matches');
+  const p = a.E(`data.purchases[0]`); eq([p.total, p.stampFees, p.carriage, p.tcs], [4805, 5, 30, 94], 'purchase stores total and the extra charges');
+  near(a.E(`data.vendors.find(function(v){return v.id==='${vend}';}).balance`) - bal0, 4805, 'vendor owes the full invoice amount');
+  eq(a.E(`data.items.find(function(i){return i.id==='${item}';}).stockGodown`) - 0 >= 12, true, 'stock received (12 bottles)');
+  // round off to match
+  a.E(`purCart.push({itemId:'${item}', name:'x', qty:1, rate:100.4}); renderPurCart()`); set('purRoundOff', '-0.4'); near(a.E(`purchaseTotal().total`), 100, 'round off applies');
+}
+section('[X19] Out-of-stock menu tiles are not bigger than others');
+{
+  const a = await app(s => { s.items.forEach(i => { i.trackStock = true; i.stockCounter = 0; i.stockGodown = 0; }); });
+  a.E(`switchScreen('billing')`); a.$('posItemSearch').value = ''; a.E(`renderPosSearchResults()`);
+  ok(/out-tag/.test(a.$('posSearchResults').innerHTML), 'tiles are tagged');
+}
 section('[X4] No text below 12px in the stylesheet');
 {
   const fs = await import('node:fs'); const html = fs.readFileSync(new URL('../www/index.html', import.meta.url), 'utf8');

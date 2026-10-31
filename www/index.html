@@ -727,7 +727,8 @@
   #screen-billing #posSearchResults{ margin-top:3px; }
 
   .search-result-wrap.no-stock{ opacity:.55; }
-  .search-result-wrap .out-tag{ align-self:flex-start; font-size:12px; font-weight:800; color:#fff; background:var(--danger); border-radius:6px; padding:0 6px; }
+  .search-result-wrap{ position:relative; }
+  .search-result-wrap .out-tag{ position:absolute; top:6px; right:6px; font-size:12px; font-weight:800; line-height:1.3; color:#fff; background:var(--danger); border-radius:6px; padding:0 5px; }
 </style>
 </head>
 <body>
@@ -1286,7 +1287,34 @@
                     <input type="number" id="purTaxPercent" value="0" min="0">
                   </div>
                 </div>
+                <div class="row" style="margin-top:6px;">
+                  <div>
+                    <label>Stamp fees</label>
+                    <input type="number" id="purStamp" value="" min="0" step="any" placeholder="0">
+                  </div>
+                  <div>
+                    <label>Carrying &amp; forwarding</label>
+                    <input type="number" id="purCarriage" value="" min="0" step="any" placeholder="0">
+                  </div>
+                </div>
+                <div class="row" style="margin-top:6px;">
+                  <div>
+                    <label>TCS</label>
+                    <input type="number" id="purTcs" value="" min="0" step="any" placeholder="0">
+                  </div>
+                  <div>
+                    <label>Round off <span class="muted" style="font-weight:400;">(+ or -)</span></label>
+                    <input type="number" id="purRoundOff" value="" step="any" placeholder="0">
+                  </div>
+                </div>
                 <div class="line grand"><span data-i18n="total">Total</span><span id="purTotal">—</span></div>
+                <div class="row" style="margin-top:6px;">
+                  <div>
+                    <label>Invoice total <span class="muted" style="font-weight:400;">(as printed - to check)</span></label>
+                    <input type="number" id="purInvoiceTotal" value="" min="0" step="any" placeholder="e.g. 4805">
+                  </div>
+                  <div style="display:flex; align-items:flex-end;"><div id="purTotalCheck" style="font-weight:700; padding-bottom:8px;"></div></div>
+                </div>
               </div>
 
               <label data-i18n="payment_mode">Payment Mode</label>
@@ -5684,14 +5712,31 @@
   // counter for sale. A purchase can be paid in Cash (no ledger effect) or
   // on Credit, which adds to that vendor's outstanding Payable balance.
   var purCart = []; // {itemId, name, qty, rate}
+  function r4(n){ return Math.round((n || 0) * 10000) / 10000; }
 
+  function numVal(id){ var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+  function r2(n){ return Math.round((n || 0) * 100) / 100; }
   function purchaseTotal(){
     var subtotal = purCart.reduce(function(s, c){ return s + c.qty * c.rate; }, 0);
     var discount = parseFloat(document.getElementById("purDiscount").value) || 0;
     var taxPercent = parseFloat(document.getElementById("purTaxPercent").value) || 0;
     var afterDiscount = Math.max(0, subtotal - discount);
     var tax = afterDiscount * (taxPercent / 100);
-    return {subtotal: subtotal, discount: discount, tax: tax, total: afterDiscount + tax};
+    var stamp = numVal("purStamp"), carriage = numVal("purCarriage"), tcs = numVal("purTcs"), roundOff = numVal("purRoundOff");
+    var total = r2(afterDiscount + tax + stamp + carriage + tcs + roundOff);
+    return {subtotal: subtotal, discount: discount, tax: tax, stamp: stamp, carriage: carriage, tcs: tcs, roundOff: roundOff, total: total};
+  }
+  // Shows the subtotal / total and whether the total agrees with the printed invoice.
+  function updatePurTotals(){
+    var t = purchaseTotal();
+    document.getElementById("purSubtotal").textContent = fmt(t.subtotal);
+    document.getElementById("purTotal").textContent = fmt(t.total);
+    var chk = document.getElementById("purTotalCheck"), invEl = document.getElementById("purInvoiceTotal");
+    if(!chk) return;
+    if(invEl.value === ""){ chk.textContent = ""; return; }
+    var diff = r2(parseFloat(invEl.value) - t.total);
+    if(Math.abs(diff) < 0.005){ chk.style.color = "var(--success)"; chk.textContent = "✓ Matches invoice"; }
+    else { chk.style.color = "var(--danger)"; chk.textContent = (diff > 0 ? "Short by " : "Over by ") + fmt(Math.abs(diff)); }
   }
 
   function renderVendorSelect(selectId){
@@ -5792,8 +5837,7 @@
     var list = document.getElementById("purCartList");
     if(purCart.length === 0){
       list.innerHTML = '<div class="empty-state">No items added yet.</div>';
-      document.getElementById("purSubtotal").textContent = fmt(0);
-      document.getElementById("purTotal").textContent = fmt(0);
+      updatePurTotals();
       return;
     }
     list.innerHTML = "";
@@ -5803,8 +5847,8 @@
       row.innerHTML =
         '<span class="name">' + escapeHtml(c.name) + '</span>' +
         '<span class="qty-box"><button data-act="dec">-</button><input type="number" class="pur-qty" value="' + c.qty + '" min="1" style="width:55px; text-align:center;"><button data-act="inc">+</button></span>' +
-        '<input type="number" class="pur-rate" value="' + c.rate + '" style="width:80px;" min="0">' +
-        '<span class="amt">' + fmt(c.qty * c.rate) + '</span>' +
+        '<input type="number" class="pur-amt" value="' + r2(c.qty * c.rate) + '" style="width:110px;" min="0" step="any" placeholder="Total amount" title="Total amount for this line, as printed on the invoice">' +
+        '<span class="pur-rate muted" style="font-size:12px; min-width:70px; text-align:right;" title="Rate per bottle (worked out)">' + (c.qty > 0 ? fmt(c.rate) + '/btl' : '') + '</span>' +
         '<span class="rm">&times;</span>';
       row.querySelector('[data-act="dec"]').addEventListener("click", function(){
         c.qty -= 1;
@@ -5816,24 +5860,23 @@
         var q = parseInt(this.value, 10);
         if(!q || q <= 0){ return; }
         c.qty = q;
-        var amtEl = row.querySelector(".amt");
-        if(amtEl) amtEl.textContent = fmt(c.qty * c.rate);
-        var t = purchaseTotal();
-        document.getElementById("purSubtotal").textContent = fmt(t.subtotal);
-        document.getElementById("purTotal").textContent = fmt(t.total);
+        // If the total amount was typed from the invoice, keep that amount and re-work the rate.
+        if(c.amtFixed){ c.rate = (parseFloat(row.querySelector(".pur-amt").value) || 0) / c.qty; }
+        else { row.querySelector(".pur-amt").value = r2(c.qty * c.rate); }
+        row.querySelector(".pur-rate").textContent = fmt(c.rate) + "/btl";
+        updatePurTotals();
       });
       row.querySelector(".pur-qty").addEventListener("change", function(){
         var q = parseInt(this.value, 10);
         if(!q || q <= 0){ purCart = purCart.filter(function(x){ return x !== c; }); }
         renderPurCart();
       });
-      row.querySelector(".pur-rate").addEventListener("input", function(){
-        c.rate = parseFloat(this.value) || 0;
-        var amtEl = row.querySelector(".amt");
-        if(amtEl) amtEl.textContent = fmt(c.qty * c.rate);
-        var t = purchaseTotal();
-        document.getElementById("purSubtotal").textContent = fmt(t.subtotal);
-        document.getElementById("purTotal").textContent = fmt(t.total);
+      row.querySelector(".pur-amt").addEventListener("input", function(){
+        var amt = parseFloat(this.value) || 0;
+        c.amtFixed = true;
+        c.rate = c.qty > 0 ? amt / c.qty : 0;      // rate per bottle worked out from the printed line amount
+        row.querySelector(".pur-rate").textContent = fmt(c.rate) + "/btl";
+        updatePurTotals();
       });
       row.querySelector(".rm").addEventListener("click", function(){
         purCart = purCart.filter(function(x){ return x !== c; });
@@ -5841,17 +5884,19 @@
       });
       list.appendChild(row);
     });
-    var t = purchaseTotal();
-    document.getElementById("purSubtotal").textContent = fmt(t.subtotal);
-    document.getElementById("purTotal").textContent = fmt(t.total);
+    updatePurTotals();
   }
 
   document.getElementById("purDiscount").addEventListener("input", renderPurCart);
   document.getElementById("purTaxPercent").addEventListener("input", renderPurCart);
+  ["purStamp", "purCarriage", "purTcs", "purRoundOff", "purInvoiceTotal"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", updatePurTotals);
+  });
 
   document.getElementById("btnClearPurchaseCart").addEventListener("click", function(){
     if(purCart.length === 0) return;
     if(!confirm("Clear this purchase entry?")) return;
+    ["purStamp", "purCarriage", "purTcs", "purRoundOff", "purInvoiceTotal"].forEach(function(id){ document.getElementById(id).value = ""; });
     purCart = [];
     renderPurCart();
   });
@@ -5896,6 +5941,11 @@
     var permitNo = document.getElementById("purPermitNo").value.trim();
     var paymentMode = document.getElementById("purPaymentMode").value;
     var totals = purchaseTotal();
+    var invTotalRaw = document.getElementById("purInvoiceTotal").value;
+    if(invTotalRaw !== "" && Math.abs(parseFloat(invTotalRaw) - totals.total) >= 0.005){
+      showToast("Total " + fmt(totals.total) + " does not match the invoice total " + fmt(parseFloat(invTotalRaw)) + ". Check the amounts, stamp fees, carrying, TCS and round off - or clear the invoice total box.");
+      return;
+    }
 
     var purchase = {
       id: uid("purchase"), purchaseNo: "PUR-" + String(data.purchases.length + 1).padStart(4, "0"),
@@ -5903,6 +5953,7 @@
       invoiceNo: invoiceNo, invoiceDate: invoiceDate || null, permitNo: permitNo || "",
       items: purCart.map(function(c){ return {itemId: c.itemId, name: c.name, qty: c.qty, rate: c.rate}; }),
       subtotal: totals.subtotal, discount: totals.discount, tax: totals.tax, total: totals.total,
+      stampFees: totals.stamp || 0, carriage: totals.carriage || 0, tcs: totals.tcs || 0, roundOff: totals.roundOff || 0,
       paymentMode: paymentMode
     };
     data.purchases.push(purchase);
@@ -5929,6 +5980,7 @@
     document.getElementById("purPermitNo").value = "";
     document.getElementById("purDiscount").value = 0;
     document.getElementById("purTaxPercent").value = 0;
+    ["purStamp", "purCarriage", "purTcs", "purRoundOff", "purInvoiceTotal"].forEach(function(id){ document.getElementById(id).value = ""; });
     renderPurCart();
     renderPurchaseScreen();
     showToast("Purchase recorded: " + purchase.purchaseNo);
@@ -6031,7 +6083,7 @@
             + '<td>' + escapeHtml(p.vendorName) + (p.poNo ? '<div class="muted" style="font-size:12px;">PO: ' + escapeHtml(p.poNo) + '</div>' : '') + '</td>'
             + '<td>' + (p.invoiceNo ? escapeHtml(p.invoiceNo) : '<span class="muted">--</span>') + (p.invoiceDate ? '<div class="muted" style="font-size:12px;">' + escapeHtml(p.invoiceDate) + '</div>' : '') + '</td>'
             + '<td>' + escapeHtml(p.paymentMode || "--") + '</td>'
-            + '<td style="text-align:right;">' + fmt(p.total) + '</td>'
+            + '<td style="text-align:right;">' + fmt(p.total) + ((p.stampFees || p.carriage || p.tcs || p.roundOff) ? '<div class="muted" style="font-size:12px;">' + [p.stampFees ? 'Stamp ' + fmt(p.stampFees) : '', p.carriage ? 'C&amp;F ' + fmt(p.carriage) : '', p.tcs ? 'TCS ' + fmt(p.tcs) : '', p.roundOff ? 'Round ' + fmt(p.roundOff) : ''].filter(Boolean).join(' · ') + '</div>' : '') + '</td>'
             + '<td>' + actionCell + '</td></tr>';
         });
         html += '</tbody></table>';
